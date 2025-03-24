@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Minimalist Pomodoro Timer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+        :root {
+            --text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.9);
+            --box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
+            --glow-color: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            transition: background 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #container {
+            border: 2px solid white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 350px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s forwards 0.5s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, white, transparent);
+            animation: none;
+        }
+
+        @keyframes progressBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0;
+            width: 0;
+            animation: typing 1s steps(20, end) forwards;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        #mode.typing-effect {
+            animation-delay: 1s;
+        }
+
+        #timer.typing-effect {
+            animation-delay: 1.5s;
+            animation-duration: 0.5s;
+        }
+
+        #cycleText.typing-effect {
+            animation-delay: 2s;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 10px 0;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.2s;
+        }
+
+        #progress-bar {
+            position: absolute;
+            height: 100%;
+            width: 0%;
+            background: white;
+            transition: width 1s linear;
+        }
+
+        #mode-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        #mode {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 2px;
+        }
+
+        #timer {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            text-shadow: var(--text-shadow);
+            margin: 20px 0;
+            letter-spacing: 4px;
+        }
+
+.buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards 2.5s;
+    justify-content: center;
+}
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            width: 120px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        #settings {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .setting {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .setting label {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .setting input {
+            width: 60px;
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 5px;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+        }
+
+        #cycleText {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+
+        #tagline {
+            font-size: 0.7rem;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.6);
+            letter-spacing: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3s;
+        }
+
+        /* Modified corner buttons */
+        #secondary-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.8s;
+        }
+
+        .tiny-button {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 5px;
+            font-size: 1rem;
+            width: auto;
+            box-shadow: none;
+            text-shadow: none;
+        }
+
+        .tiny-button:hover {
+            color: white;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        /* Settings panel */
+        #settings-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .settings-row label {
+            text-align: left;
+        }
+
+        .settings-row input {
+            width: 80px;
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 5px;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .close-settings {
+            margin-top: 20px;
+        }
+
+        #attribution {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3.2s;
+        }
+
+        .emoji {
+            font-size: 1.5rem; /* Increased size */
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.8s; /* Fade-in animation */
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+<a href="index.html" class="tiny-button emoji" style="text-decoration: none; display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; left: 10px;" onclick="toggleWhiteNoise()">🏠</a>
+        <div id="mode-container">
+            <div id="mode" class="typing-effect"></div>
+        </div>
+        <div id="timer" class="typing-effect"></div>
+        
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <div id="controls">
+            <div class="buttons">
+                <button id="startBtn" onclick="toggleTimer()">START</button>
+                <button id="resetBtn" onclick="resetTimer()">RESET</button>
+            </div>
+        </div>
+        
+        <div id="cycleText" class="typing-effect">CYCLE: 0</div>
+        
+<div id="secondary-controls">
+<button id="whiteNoiseBtn" class="tiny-button emoji" onclick="toggleWhiteNoise()">🔇</button>
+        </div>
+<div id="bottom-controls">
+            <button id="skipBtn" class="tiny-button" onclick="skipSession()">skip</button>
+            <button id="settingsBtn" class="tiny-button" onclick="toggleSettings()">settings</button>
+        </div>
+    </div>
+    
+    <div id="tagline">Not Just a Timer.</div>
+    
+    <!-- Attribution text -->
+    <div id="attribution">Made with Love by Qtac.</div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel">
+        <h2>SETTINGS</h2>
+        <div class="settings-row">
+            <label for="workMinutes">FOCUS TIME (min)</label>
+            <input type="number" id="workMinutes" min="1" max="60" value="25">
+        </div>
+        <div class="settings-row">
+            <label for="breakMinutes">BREAK TIME (min)</label>
+            <input type="number" id="breakMinutes" min="1" max="30" value="5">
+        </div>
+        <div class="settings-row">
+            <label for="longBreakMinutes">LONG BREAK TIME (min)</label>
+            <input type="number" id="longBreakMinutes" min="5" max="60" value="15">
+        </div>
+        <div class="settings-row">
+            <label for="longBreakInterval">LONG BREAK AFTER</label>
+            <input type="number" id="longBreakInterval" min="1" max="10" value="4">
+        </div>
+        <div class="settings-row">
+            <label for="soundToggle">SOUND</label>
+            <input type="checkbox" id="soundToggle" checked>
+        </div>
+        <div class="settings-row">
+            <label for="whiteNoiseVolume">WHITE NOISE VOLUME</label>
+            <input type="range" id="whiteNoiseVolume" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <button class="close-settings" onclick="toggleSettings()">SAVE & CLOSE</button>
+    </div>
+
+<style>
+#bottom-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards 2.8s;
+    width: 100%; /* Ensure it takes the full width of the container */
+}
+
+</style>
+
+    <script>
+        // Default settings
+        let settings = {
+            workTime: 25,
+            breakTime: 5,
+            longBreakTime: 15,
+            longBreakInterval: 4,
+            soundEnabled: true
+        };
+        
+        // State variables
+        let timeLeft;
+        let totalTime;
+        let isWorkSession = true;
+        let isLongBreak = false;
+        let isRunning = false;
+        let cycles = 0;
+        let completedSessions = 0;
+        let interval;
+        let audioCtx = null;
+        let whiteNoiseSource = null;
+        let gainNode = null;
+
+        // Initialize
+        function init() {
+            loadSettings();
+            timeLeft = settings.workTime * 60;
+            totalTime = timeLeft;
+            updateProgressBar(100);
+            
+            // Set initial text content
+            document.getElementById("mode").innerText = "FOCUS";
+            document.getElementById("timer").innerText = formatTime(timeLeft);
+            document.getElementById("cycleText").innerText = "CYCLE: " + cycles;
+
+            // Initialize audio context and gain node
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            gainNode = audioCtx.createGain();
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.value = 0.002; // Reduce maximum volume
+            // Set initial volume
+            gainNode.gain.value = document.getElementById('whiteNoiseVolume').value;
+
+            // Add event listener for volume control
+            document.getElementById('whiteNoiseVolume').addEventListener('input', function() {
+                gainNode.gain.value = this.value;
+            });
+        }
+
+        // Load settings from localStorage if available
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('pomodoroSettings');
+            if (savedSettings) {
+                settings = JSON.parse(savedSettings);
+            }
+            
+            // Update settings form
+            document.getElementById('workMinutes').value = settings.workTime;
+            document.getElementById('breakMinutes').value = settings.breakTime;
+            document.getElementById('longBreakMinutes').value = settings.longBreakTime;
+            document.getElementById('longBreakInterval').value = settings.longBreakInterval;
+            document.getElementById('soundToggle').checked = settings.soundEnabled;
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            settings.workTime = parseInt(document.getElementById('workMinutes').value) || 25;
+            settings.breakTime = parseInt(document.getElementById('breakMinutes').value) || 5;
+            settings.longBreakTime = parseInt(document.getElementById('longBreakMinutes').value) || 15;
+            settings.longBreakInterval = parseInt(document.getElementById('longBreakInterval').value) || 4;
+            settings.soundEnabled = document.getElementById('soundToggle').checked;
+            
+            localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+            
+            // Reset timer with new settings if not running
+            if (!isRunning) {
+                resetTimer();
+            }
+        }
+
+        // Toggle settings panel
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            if (panel.style.display === 'flex') {
+                panel.style.display = 'none';
+                saveSettings();
+            } else {
+                panel.style.display = 'flex';
+            }
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            let formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById("timer").innerText = formattedTime;
+            
+            // Update progress bar
+            const progressPercentage = (timeLeft / totalTime) * 100;
+            updateProgressBar(progressPercentage);
+            
+            // Update document title
+            document.title = `${formattedTime} - ${isWorkSession ? 'Focus' : 'Break'}`;
+        }
+
+        // Update progress bar
+        function updateProgressBar(percentage) {
+            document.getElementById("progress-bar").style.width = percentage + "%";
+        }
+
+        // Toggle timer (start/pause)
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(interval);
+                isRunning = false;
+                document.getElementById("startBtn").innerText = "START";
+            } else {
+                // Start timer
+                interval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(interval);
+                        playSound();
+                        switchSession();
+                    }
+                }, 1000);
+                
+                isRunning = true;
+                document.getElementById("startBtn").innerText = "PAUSE";
+            }
+        }
+
+        // Reset timer
+        function resetTimer() {
+            clearInterval(interval);
+            isWorkSession = true;
+            isLongBreak = false;
+            timeLeft = settings.workTime * 60;
+            totalTime = timeLeft;
+            isRunning = false;
+            cycles = 0;
+            completedSessions = 0;
+            
+            document.getElementById("mode").innerText = "FOCUS";
+            updateTimerDisplay();
+            document.getElementById("cycleText").innerText = "CYCLE: " + cycles;
+            document.getElementById("startBtn").innerText = "START";
+            
+            updateProgressBar(100);
+            document.body.style.background = "#000";
+        }
+
+        // Skip current session
+        function skipSession() {
+            if (isRunning) {
+                clearInterval(interval);
+            }
+            switchSession();
+        }
+
+        // Switch between focus and break sessions
+        function switchSession() {
+            isWorkSession = !isWorkSession;
+            
+            // Check if we need a long break
+            if (!isWorkSession && completedSessions > 0 && completedSessions % settings.longBreakInterval === 0) {
+                isLongBreak = true;
+                timeLeft = settings.longBreakTime * 60;
+            } else {
+                isLongBreak = false;
+                timeLeft = isWorkSession ? settings.workTime * 60 : settings.breakTime * 60;
+            }
+            
+            totalTime = timeLeft;
+            
+            let modeText;
+            if (isWorkSession) {
+                modeText = "FOCUS";
+                document.body.style.background = "#000";
+                cycles++;
+            } else {
+                modeText = isLongBreak ? "LONG BREAK" : "BREAK";
+                document.body.style.background = isLongBreak ? "#0d1c2e" : "#1e1e1e";
+            }
+            
+            if (isWorkSession) {
+                completedSessions++;
+            }
+            
+            document.getElementById("mode").innerText = modeText;
+            updateTimerDisplay();
+            document.getElementById("cycleText").innerText = "CYCLE: " + cycles;
+            
+            // Reset progress bar
+            updateProgressBar(100);
+            
+            // Start timer automatically
+            toggleTimer();
+        }
+
+        // Format time for display
+        function formatTime(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Play sound notification
+        function playSound() {
+            if (!settings.soundEnabled) return;
+            
+            try {
+                
+                const oscillator = audioCtx.createOscillator();
+                
+                oscillator.connect(gainNode);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 750;
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 200);
+                
+                setTimeout(() => {
+                    const oscillator2 = audioCtx.createOscillator();
+                    oscillator2.connect(gainNode);
+                    oscillator2.type = 'sine';
+                    oscillator2.frequency.value = 1000;
+                    oscillator2.start();
+                    
+                    setTimeout(() => {
+                        oscillator2.stop();
+                    }, 300);
+                }, 300);
+                
+            } catch (e) {
+                console.error("Could not play sound:", e);
+            }
+        }
+
+        // Function to generate and toggle white noise
+        function toggleWhiteNoise() {
+            try {
+                const whiteNoiseBtn = document.getElementById('whiteNoiseBtn');
+
+                if (whiteNoiseSource) {
+                    // If white noise is playing, stop it
+                    whiteNoiseSource.stop();
+                    whiteNoiseSource = null;
+                    whiteNoiseBtn.textContent = '🔇'; // Mute emoji
+                } else {
+                    // Create white noise
+                    const bufferSize = 2 * audioCtx.sampleRate;
+                    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+
+                    whiteNoiseSource = audioCtx.createBufferSource();
+                    whiteNoiseSource.buffer = noiseBuffer;
+                    whiteNoiseSource.loop = true;
+                    whiteNoiseSource.connect(gainNode); // Connect to gain node
+                    whiteNoiseSource.start(0);
+                    whiteNoiseBtn.textContent = '🔈'; // Sound emoji
+                }
+            } catch (e) {
+                console.error("Could not play white noise:", e);
+            }
+        }
+
+
+        // Initialize on page load
+        window.onload = function() {
+            init();
+        };
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Spacebar - Start/Pause
+            if (e.code === 'Space' && document.getElementById('settings-panel').style.display !== 'flex') {
+                e.preventDefault();
+                toggleTimer();
+            }
+            // R key - Reset
+            if (e.code === 'KeyR' && document.getElementById('settings-panel').style.display !== 'flex') {
+                resetTimer();
+            }
+            // S key - Skip
+            if (e.code === 'KeyS' && document.getElementById('settings-panel').style.display !== 'flex') {
+                skipSession();
+            }
+            // Escape key - Close settings panel
+            if (e.code === 'Escape' && document.getElementById('settings-panel').style.display === 'flex') {
+                toggleSettings();
+            }
+        });
+
+        // Request notification permission
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
+    </script>
+</body>
+</html>

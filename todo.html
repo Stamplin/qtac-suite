@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Todo List</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+        :root {
+            --text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.9);
+            --box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
+            --glow-color: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background 1s ease;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        #container {
+            border: 2px solid white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s forwards 0.5s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, white, transparent);
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0;
+            width: 0;
+            animation: typing 1s steps(20, end) forwards;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        #title.typing-effect {
+            animation-delay: 1s;
+        }
+
+        #title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        #input-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 1.5s;
+        }
+
+        #todo-input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 10px;
+            font-size: 1rem;
+            font-family: 'Space Mono', monospace;
+            box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.3);
+        }
+
+        #todo-input:focus {
+            outline: none;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
+        }
+
+        #add-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 10px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            font-family: 'Space Mono', monospace;
+            margin-left: 10px;
+        }
+
+        #add-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #format-options {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 1.8s;
+        }
+
+        .format-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid white;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .format-btn:hover, .format-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        #todo-list-container {
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+            margin-bottom: 20px;
+            padding-right: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2s;
+        }
+
+        #todo-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-left: 2px solid white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .todo-item.slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+            transform: translateX(-20px);
+            opacity: 0;
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .todo-text {
+            flex-grow: 1;
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .todo-text.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+        }
+
+        .action-btn {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0;
+            transition: all 0.2s ease;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .action-btn:hover {
+            color: white;
+            text-shadow: 0px 0px 5px white;
+        }
+
+        .bullet-item::before {
+            content: "•";
+            margin-right: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            border: 1px solid white;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .checkbox.checked::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.9rem;
+        }
+
+        #clear-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            font-family: 'Space Mono', monospace;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.2s;
+        }
+
+        #clear-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Custom scrollbar */
+        #todo-list-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #todo-list-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #todo-list-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        #todo-list-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        #tagline {
+            font-size: 0.7rem;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.6);
+            letter-spacing: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.5s;
+        }
+
+        #info {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            opacity: 0;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            z-index: 100;
+            width: 280px;
+            transition: opacity 0.3s ease;
+        }
+
+        #info ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        #info li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+
+        #attribution {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3s;
+        }
+
+        #help-icon {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            z-index: 2;
+        }
+
+        #help-icon:hover {
+            color: white;
+            text-shadow: 0 0 5px white;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        .shake {
+          animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          50% { transform: translateX(5px); }
+          75% { transform: translateX(-5px); }
+          100% { transform: translateX(0); }
+        }
+
+        #reset-btn, #home-btn {
+            position: fixed;
+            bottom: 20px;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.2s;
+        }
+
+        #reset-btn {
+            left: 20px;
+        }
+
+        #home-btn {
+            left: 60px;
+        }
+
+        #reset-btn:hover, #home-btn:hover {
+            color: white;
+            text-shadow: 0 0 5px white;
+        }
+
+        @keyframes pulse-home {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #info-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        #info-close:hover {
+            color: #ddd;
+        }
+
+        /* Modal backdrop */
+        #modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 90;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="title" class="typing-effect">Just Do It.</div>
+
+        <div id="input-container">
+            <input type="text" id="todo-input" placeholder="What needs to be done?">
+            <button id="add-btn">ADD</button>
+        </div>
+
+        <div id="format-options">
+            <button class="format-btn active" data-format="plain">Plain</button>
+            <button class="format-btn" data-format="bullet">Bullet</button>
+            <button class="format-btn" data-format="checkbox">Checkbox</button>
+        </div>
+
+        <div id="todo-list-container">
+            <ul id="todo-list"></ul>
+        </div>
+
+        <button id="clear-btn">CLEAR COMPLETED</button>
+        <div id="help-icon">?</div>
+        <div id="reset-btn">🗑️</div>
+        <div id="home-btn" onclick="window.location.href='index.html'">🏠</div>
+    </div>
+
+    <div id="tagline">IT'S JUST A TODO LIST</div>
+
+    <div id="modal-backdrop"></div>
+    <div id="info">
+        <div id="info-close">x</div>
+        <p>Type using Markdown syntax:</p>
+        <ul>
+            <li>**bold text** → <strong>bold text</strong></li>
+            <li>*italic text* → <em>italic text</em></li>
+            <li>~strikethrough~ → <del>strikethrough</del></li>
+            <li>`code` → <code>code</code></li>
+            <li>[link](url) → <a href="#" style="color: #fff;">link</a></li>
+        </ul>
+    </div>
+
+    <div id="attribution">Made with Love by Qtac.</div>
+
+    <script>
+        // State variables
+        let todos = [];
+        let selectedFormat = 'plain'; // Default format
+        let placeholderTexts = [
+            "What needs to be done?",
+            "What's on your mind?",
+            "What's your next task?",
+            "Add a new item..."
+        ];
+        let currentPlaceholderIndex = 0;
+        let placeholderInterval;
+
+        // DOM Elements
+        const todoInput = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+        const clearBtn = document.getElementById('clear-btn');
+        const formatBtns = document.querySelectorAll('.format-btn');
+        const helpIcon = document.getElementById('help-icon');
+        const infoBox = document.getElementById('info');
+        const infoClose = document.getElementById('info-close');
+        const resetBtn = document.getElementById('reset-btn');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+
+        function init() {
+            loadTodos();
+            renderTodoList();
+            startPlaceholderRotation();
+
+            // Event listeners
+            addBtn.addEventListener('click', addTodo);
+            todoInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+            clearBtn.addEventListener('click', clearCompleted);
+            helpIcon.addEventListener('click', toggleInfoBox);
+            infoClose.addEventListener('click', toggleInfoBox);
+            resetBtn.addEventListener('click', resetTodoList);
+            modalBackdrop.addEventListener('click', toggleInfoBox);
+
+            // Format selection
+            formatBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    formatBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedFormat = this.dataset.format;
+                    localStorage.setItem('selectedFormat', selectedFormat);
+                    renderTodoList();
+                });
+            });
+
+            // Load saved format preference
+            const savedFormat = localStorage.getItem('selectedFormat');
+            if (savedFormat) {
+                selectedFormat = savedFormat;
+                formatBtns.forEach(btn => {
+                    if (btn.dataset.format === savedFormat) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        // Function to start placeholder rotation
+        function startPlaceholderRotation() {
+            placeholderInterval = setInterval(() => {
+                currentPlaceholderIndex = (currentPlaceholderIndex + 1) % placeholderTexts.length;
+                todoInput.placeholder = placeholderTexts[currentPlaceholderIndex];
+            }, 3000);
+        }
+
+        // Function to stop placeholder rotation
+        function stopPlaceholderRotation() {
+            clearInterval(placeholderInterval);
+        }
+
+        // Load todos from localStorage
+        function loadTodos() {
+            const savedTodos = localStorage.getItem('todos');
+            if (savedTodos) {
+                try {
+                    todos = JSON.parse(savedTodos);
+                } catch (e) {
+                    console.error('Error parsing todos:', e);
+                    todos = [];
+                }
+            }
+        }
+
+        // Save todos to localStorage
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // Add new todo
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                const todo = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false,
+                    format: selectedFormat,
+                    rendered: false
+                };
+
+                todos.push(todo);
+                saveTodos();
+                renderTodoList();
+                todoInput.value = '';
+                todoInput.focus();
+            } else {
+                todoInput.classList.add('shake');
+                setTimeout(() => {
+                    todoInput.classList.remove('shake')
+                }, 500);
+            }
+        }
+
+        // Toggle todo completion
+        function toggleTodo(id) {
+            let targetTodo = todos.find(todo => todo.id === id);
+            if (targetTodo) {
+                targetTodo.completed = !targetTodo.completed;
+                saveTodos();
+                renderTodoList();
+            }
+        }
+
+        // Remove todo
+        function removeTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            saveTodos();
+            renderTodoList();
+        }
+
+        // Clear completed todos
+        function clearCompleted() {
+            todos = todos.filter(todo => !todo.completed);
+            saveTodos();
+            renderTodoList();
+        }
+
+        // Reset todo list
+        function resetTodoList() {
+            if (confirm("Are you sure you want to delete all tasks?")) {
+                todos = [];
+                saveTodos();
+                renderTodoList();
+            }
+        }
+
+        // Toggle info box
+        function toggleInfoBox() {
+            if (infoBox.style.display === 'none' || infoBox.style.display === '') {
+                infoBox.style.display = 'block';
+                modalBackdrop.style.display = 'block';
+                requestAnimationFrame(() => {
+                    infoBox.style.opacity = 1;
+                    modalBackdrop.style.opacity = 1;
+                });
+            } else {
+                infoBox.style.opacity = 0;
+                modalBackdrop.style.opacity = 0;
+                setTimeout(() => {
+                    infoBox.style.display = 'none';
+                    modalBackdrop.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // Render the todo list
+        function renderTodoList() {
+            todoList.innerHTML = '';
+
+            todos.forEach((todo) => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                
+                // Only add slide-in animation for new items
+                if (!todo.rendered) {
+                    li.classList.add('slide-in');
+                    todo.rendered = true;
+                    saveTodos();
+                }
+                
+                // Set format class
+                if (todo.format === 'bullet') {
+                    li.classList.add('bullet-item');
+                } else if (todo.format === 'checkbox') {
+                    li.classList.add('checkbox-item');
+                    const checkbox = document.createElement('span');
+                    checkbox.className = `checkbox ${todo.completed ? 'checked' : ''}`;
+                    checkbox.addEventListener('click', () => toggleTodo(todo.id));
+                    li.appendChild(checkbox);
+                }
+
+                // Create the text content with markdown parsing
+                const textDiv = document.createElement('div');
+                textDiv.className = `todo-text ${todo.completed ? 'completed' : ''}`;
+                textDiv.innerHTML = parseMarkdown(todo.text);
+                
+                // Add event listener to toggle completion on text click for non-checkbox items
+                if(todo.format !== 'checkbox') {
+                    textDiv.style.cursor = 'pointer';
+                    textDiv.addEventListener('click', () => toggleTodo(todo.id));
+                }
+                
+                li.appendChild(textDiv);
+
+                // Create action buttons
+                const actions = document.createElement('div');
+                actions.className = 'todo-actions';
+
+                if (todo.format !== 'checkbox') {
+                    const completeBtn = document.createElement('button');
+                    completeBtn.className = 'action-btn';
+                    completeBtn.textContent = todo.completed ? 'UNDO' : 'DONE';
+                    completeBtn.addEventListener('click', () => toggleTodo(todo.id));
+                    actions.appendChild(completeBtn);
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn';
+                deleteBtn.textContent = 'DELETE';
+                deleteBtn.addEventListener('click', () => removeTodo(todo.id));
+                actions.appendChild(deleteBtn);
+
+                li.appendChild(actions);
+                todoList.appendChild(li);
+            });
+        }
+
+        // Parse markdown syntax
+        function parseMarkdown(text) {
+            // Bold: **text**
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Italic: *text*
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // Strikethrough: ~text~
+            text = text.replace(/\~(.*?)\~/g, '<del>$1</del>');
+
+            // Code: `text`
+            text = text.replace(/\`(.*?)\`/g, '<code>$1</code>');
+
+            // Links: [text](url)
+            text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #fff; text-decoration: underline;">$1</a>');
+
+            return text;
+        }
+    </script>
+</body>
+</html>

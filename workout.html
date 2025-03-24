@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7-Minute Workout</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+        :root {
+            --text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.9);
+            --box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
+            --glow-color: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background 1s ease;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        #container {
+            border: 2px solid white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s forwards 0.5s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, white, transparent);
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0;
+            width: 0;
+            animation: typing 1s steps(20, end) forwards;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        #title.typing-effect {
+            animation-delay: 1s;
+        }
+
+        #title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        #generate-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            font-family: 'Space Mono', monospace;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 1.8s;
+        }
+
+        #generate-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #workout-container {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #timer {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            text-shadow: var(--text-shadow);
+            margin: 20px 0;
+        }
+
+        #exercise-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-shadow: var(--text-shadow);
+        }
+
+        #exercise-description {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: white;
+            transition: width 0.1s linear;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid white;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #streak-container {
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2s;
+        }
+
+        #streak-label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        #streak-days {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .streak-day {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid white;
+            box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .streak-day.completed {
+            background: white;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.8);
+        }
+
+        #home-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.2s;
+        }
+
+        #home-btn:hover {
+            color: white;
+            text-shadow: 0 0 5px white;
+        }
+
+        #tagline {
+            font-size: 0.7rem;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.6);
+            letter-spacing: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.5s;
+        }
+
+        #attribution {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .streak-day.completed {
+            background: white;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.8);
+            animation: streak-complete 0.5s ease-in-out;
+        }
+
+        @keyframes streak-complete {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="title" class="typing-effect">7-Minute Workout</div>
+
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <label for="workout-type">Workout Type:</label>
+        <select id="workout-type">
+            <option value="full">Full Body</option>
+            <option value="push">Push</option>
+            <option value="pull">Pull</option>
+            <option value="legs">Legs</option>
+        </select>
+        
+        <button id="generate-btn" onclick="generateWorkout()">START</button>
+        
+        <div id="workout-container">
+            <div id="exercise-name">Exercise Name</div>
+            <div id="exercise-description">Exercise description goes here...</div>
+            <div id="timer">00:30</div>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+           <div class="control-buttons">
+                <button class="control-btn" id="pause-btn" onclick="togglePause()">PAUSE</button>
+                <button class="control-btn" id="skip-btn" onclick="skipExercise()">SKIP</button>
+                <button class="control-btn" id="stop-btn" onclick="stopWorkout()">STOP</button>
+            </div>
+        </div>
+        
+        <div id="streak-container">
+            <div id="streak-label">Current Streak: <span id="streak-count">0</span> days</div>
+            <div id="streak-days">
+                <div class="streak-day" data-day="0"></div>
+                <div class="streak-day" data-day="1"></div>
+                <div class="streak-day" data-day="2"></div>
+                <div class="streak-day" data-day="3"></div>
+                <div class="streak-day" data-day="4"></div>
+                <div class="streak-day" data-day="5"></div>
+                <div class="streak-day" data-day="6"></div>
+            </div>
+        </div>
+        
+        <div id="home-btn" onclick="window.location.href='index.html'">🏠</div>
+    </div>
+
+    <div id="tagline">STRONGER EVERY DAY</div>
+
+    <div id="attribution">Made with Love by Qtac.</div>
+
+    <script>
+        // DOM Elements
+        const generateBtn = document.getElementById('generate-btn');
+        const workoutContainer = document.getElementById('workout-container');
+        const exerciseName = document.getElementById('exercise-name');
+        const exerciseDescription = document.getElementById('exercise-description');
+        const timerElement = document.getElementById('timer');
+        const progressBar = document.getElementById('progress-bar');
+        const pauseBtn = document.getElementById('pause-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const streakCount = document.getElementById('streak-count');
+        const streakDays = document.querySelectorAll('.streak-day');
+
+        // Workout state
+        let currentExerciseIndex = 0;
+        let currentWorkout = [];
+        let timerInterval;
+        let timeLeft = 0;
+        let totalTime = 0;
+        let isPaused = false;
+        let streak = 0;
+        let lastWorkoutDate = null;
+        let completedToday = false;
+
+        // Exercise database
+        const exercises = {
+            full: {
+                easy: [
+                    { name: "Jumping Jacks", description: "Stand with feet together, jump and spread legs while raising arms overhead", duration: 30 },
+                    { name: "Wall Sit", description: "Lean against wall with knees bent at 90 degrees", duration: 30 },
+                    { name: "Push-ups (Modified)", description: "Push-ups with knees on the ground", duration: 30 },
+                    { name: "Crunches", description: "Lie on back, knees bent, lift shoulders off floor", duration: 30 },
+                    { name: "Chair Step-ups", description: "Step up and down from a sturdy chair", duration: 30 },
+                    { name: "Squats", description: "Stand with feet shoulder-width apart, lower body as if sitting", duration: 30 },
+                    { name: "Tricep Dips", description: "Using a chair, lower body with arms", duration: 30 },
+                    { name: "Plank", description: "Hold a push-up position on forearms", duration: 30 },
+                    { name: "High Knees", description: "Run in place, lifting knees to waist height", duration: 30 },
+                    { name: "Lunges", description: "Step forward with one leg, lowering hips until both knees are bent", duration: 30 },
+                    { name: "Push-ups (Modified)", description: "Push-ups with knees on the ground", duration: 30 },
+                    { name: "Side Plank", description: "Balance on side with forearm and feet", duration: 15, both: true }
+                ],
+                medium: [
+                    { name: "Jumping Jacks", description: "Stand with feet together, jump and spread legs while raising arms overhead", duration: 30 },
+                    { name: "Wall Sit", description: "Lean against wall with knees bent at 90 degrees", duration: 40 },
+                    { name: "Push-ups", description: "Standard push-ups with good form", duration: 30 },
+                    { name: "Crunches", description: "Lie on back, knees bent, lift shoulders off floor", duration: 30 },
+                    { name: "Step-ups", description: "Step up and down from a sturdy chair", duration: 40 },
+                    { name: "Squats", description: "Stand with feet shoulder-width apart, lower body as if sitting", duration: 40 },
+                    { name: "Tricep Dips", description: "Using a chair, lower body with arms", duration: 30 },
+                    { name: "Plank", description: "Hold a push-up position on forearms", duration: 40 },
+                    { name: "High Knees", description: "Run in place, lifting knees to waist height", duration: 40 },
+                    { name: "Lunges", description: "Step forward with one leg, lowering hips until both knees are bent", duration: 40 },
+                    { name: "Push-ups with Rotation", description: "Push-up, then rotate to side plank", duration: 30 },
+                    { name: "Side Plank", description: "Balance on side with forearm and feet", duration: 20, both: true }
+                ],
+                hard: [
+                    { name: "Burpees", description: "From standing, drop to push-up, then jump up with hands overhead", duration: 30 },
+                    { name: "Wall Sit", description: "Lean against wall with knees bent at 90 degrees", duration: 60 },
+                    { name: "Push-ups", description: "Standard push-ups", duration: 40 },
+                    { name: "V-Ups", description: "Lie on back, simultaneously raise legs and upper body to form V", duration: 30 },
+                    { name: "Box Jumps", description: "Jump onto elevated surface, step back down", duration: 40 },
+                    { name: "Jump Squats", description: "Perform a squat, then jump explosively", duration: 40 },
+                    { name: "Diamond Push-ups", description: "Push-ups with hands close together forming diamond", duration: 30 },
+                    { name: "Plank with Shoulder Taps", description: "In plank position, tap opposite shoulder with hand", duration: 40 },
+                    { name: "Mountain Climbers", description: "In plank position, alternate bringing knees to chest", duration: 40 },
+                    { name: "Jumping Lunges", description: "Alternate lunges with a jump between each", duration: 40 },
+                    { name: "Clapping Push-ups", description: "Push-ups with enough force to clap hands between reps", duration: 30 },
+                    { name: "Side Plank with Leg Raise", description: "Side plank while raising top leg", duration: 20, both: true }
+                ]
+            },
+            push: {
+                easy: [
+                    { name: "Modified Push-ups", description: "Push-ups with knees on the ground", duration: 30 },
+                    { name: "Wall Push-ups", description: "Push-ups against a wall", duration: 30 },
+                    { name: "Tricep Dips", description: "Using a chair, lower body with arms", duration: 30 },
+                    { name: "Shoulder Taps", description: "In plank position, tap opposite shoulder with hand", duration: 30 },
+                    { name: "Arm Circles", description: "Small circles with arms extended", duration: 30 },
+                    { name: "Modified Push-ups", description: "Push-ups with knees on the ground", duration: 30 },
+                    { name: "Tricep Extensions", description: "Extend arms overhead, then bend at elbows", duration: 30 }
+                ],
+                medium: [
+                    { name: "Standard Push-ups", description: "Push-ups with good form", duration: 30 },
+                    { name: "Tricep Dips", description: "Using a chair, lower body with arms", duration: 30 },
+                    { name: "Decline Push-ups", description: "Push-ups with feet elevated", duration: 30 },
+                    { name: "Diamond Push-ups", description: "Push-ups with hands close together forming diamond", duration: 30 },
+                    { name: "Plank with Shoulder Taps", description: "In plank position, tap opposite shoulder with hand", duration: 30 },
+                    { name: "Push-ups with Rotation", description: "Push-up, then rotate to side plank", duration: 30 },
+                    { name: "Pike Push-ups", description: "Push-ups with hips raised high, head toward ground", duration: 30 }
+                ]
+            },
+            pull: {
+                easy: [
+                    { name: "Superman", description: "Lie face down, extend arms and legs, lift off ground", duration: 30 },
+                    { name: "Reverse Snow Angels", description: "Lie face down, move arms in snow angel motion", duration: 30 },
+                    { name: "Doorway Curls", description: "Curl arms using doorway for resistance", duration: 30, both: true },
+                    { name: "Prone Y Raises", description: "Lie face down, raise arms in Y position", duration: 30 },
+                    { name: "Prone T Raises", description: "Lie face down, raise arms in T position", duration: 30 },
+                    { name: "Towel Rows", description: "Row using a towel for resistance", duration: 30 },
+                    { name: "Reverse Plank", description: "Face up plank position, supporting body on hands and heels", duration: 30 }
+                ],
+                medium: [
+                    { name: "Superman Pulses", description: "Superman position with pulsing movements", duration: 30 },
+                    { name: "Doorway Rows", description: "Row using doorway for resistance", duration: 30 },
+                    { name: "Towel Rows", description: "Row using a towel for resistance", duration: 40 },
+                    { name: "Prone W Raises", description: "Lie face down, raise arms in W position", duration: 30 },
+                    { name: "Reverse Plank", description: "Face up plank position, supporting body on hands and heels", duration: 40 },
+                    { name: "Dolphin Kicks", description: "Lie face down, kick legs in dolphin motion", duration: 30 },
+                    { name: "Prone Swimmers", description: "Lie face down, aalternate arm and leg raises", duration: 30 }
+                ],
+                hard: [
+                    { name: "Superman Hold with Pulses", description: "Hold superman position with small pulses", duration: 40 },
+                    { name: "Towel Rows (Elevated Feet)", description: "Towel rows with feet elevated", duration: 40 },
+                    { name: "Inverted Row Progression", description: "Row using table or sturdy surface", duration: 30 },
+                    { name: "Reverse Plank Leg Raises", description: "Reverse plank with alternating leg raises", duration: 40 },
+                    { name: "Prone Swimmers (Fast)", description: "Lie face down, alternate arm and leg raises quickly", duration: 40 },
+                    { name: "Back Extensions", description: "Lie face down, raise upper body off ground", duration: 30 },
+                    { name: "Chin-up Holds", description: "Hold chin-up position or negative chin-ups if possible", duration: 30 }
+                ]
+            },
+            legs: {
+                easy: [
+                    { name: "Squats", description: "Stand with feet shoulder-width apart, lower body as if sitting", duration: 30 },
+                    { name: "Lunges", description: "Step forward with one leg, lowering hips until both knees are bent", duration: 30 },
+                    { name: "Calf Raises", description: "Rise up on toes, then lower heels", duration: 30 },
+                    { name: "Glute Bridges", description: "Lie on back, feet flat, raise hips", duration: 30 },
+                    { name: "Side Leg Raises", description: "Lie on side, raise top leg", duration: 30, both: true },
+                    { name: "Seated Leg Extensions", description: "Seated, extend one leg at a time", duration: 30 },
+                    { name: "Standing Knee Raises", description: "Raise knee to chest while standing", duration: 30 }
+                ],
+                medium: [
+                    { name: "Squats", description: "Stand with feet shoulder-width apart, lower body as if sitting", duration: 40 },
+                    { name: "Lunges", description: "Step forward with one leg, lowering hips until both knees are bent", duration: 40 },
+                    { name: "Calf Raises (Single Leg)", description: "Rise up on toes of one leg", duration: 30, both: true },
+                    { name: "Glute Bridge Marches", description: "In bridge position, alternate lifting each foot", duration: 40 },
+                    { name: "Fire Hydrants", description: "On hands and knees, raise leg to side", duration: 30, both: true },
+                    { name: "Step-ups", description: "Step up and down from a sturdy chair", duration: 40 },
+                    { name: "Curtsy Lunges", description: "Lunge by stepping behind and across body", duration: 40 }
+                ],
+                hard: [
+                    { name: "Jump Squats", description: "Perform a squat, then jump explosively", duration: 40 },
+                    { name: "Jumping Lunges", description: "Alternate lunges with a jump between each", duration: 40 },
+                    { name: "Single-Leg Glute Bridges", description: "Glute bridge with one leg extended", duration: 30, both: true },
+                    { name: "Pistol Squat Progression", description: "Single leg squat using support if needed", duration: 30, both: true },
+                    { name: "Box Jumps", description: "Jump onto elevated surface, step back down", duration: 40 },
+                    { name: "Bulgarian Split Squats", description: "Rear foot elevated lunge", duration: 30, both: true },
+                    { name: "Lateral Jumps", description: "Jump side to side over an imaginary line", duration: 40 }
+                ]
+            }
+        };
+        
+         // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const controlButtons = document.querySelectorAll('.control-btn');
+            controlButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.id.replace('-btn', '');
+                    switch (action) {
+                        case 'pause':
+                            togglePause();
+                            break;
+                        case 'skip':
+                            skipExercise();
+                            break;
+                        case 'stop':
+                            stopWorkout();
+                            break;
+                    }
+                });
+            });
+
+            generateBtn.addEventListener('click', generateWorkout);
+            loadStreakData();
+            updateStreakDisplay();
+        });
+
+        function generateWorkout() {
+            const difficulty = document.getElementById('difficulty').value;
+            const workoutType = document.getElementById('workout-type').value;
+            const availableExercises = exercises[workoutType][difficulty];
+
+            if (!availableExercises || availableExercises.length === 0) {
+                alert('No exercises found for the selected difficulty and workout type.');
+                return;
+            }
+
+            currentWorkout = Array.from({ length: 12 }, () => {
+                const randomIndex = Math.floor(Math.random() * availableExercises.length);
+                return availableExercises[randomIndex];
+            });
+
+            generateBtn.style.display = "none";
+            workoutContainer.style.display = "flex";
+            currentExerciseIndex = 0;
+            startExercise();
+        }
+
+        function startExercise() {
+            if (currentExerciseIndex < currentWorkout.length) {
+                const exercise = currentWorkout[currentExerciseIndex];
+                exerciseName.textContent = exercise.name;
+                exerciseDescription.textContent = exercise.description;
+                timeLeft = exercise.duration;
+                totalTime = exercise.duration;
+                updateTimerDisplay();
+                startCountdown(false);
+                workoutContainer.style.display = "flex";
+            } else {
+                stopWorkout();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            progressBar.style.width = `${(timeLeft / totalTime) * 100}%`;
+        }
+
+        function startCountdown(isRest) {
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateTimerDisplay();
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (!isRest) {
+                            exerciseName.textContent = "Rest";
+                            exerciseDescription.textContent = "Get ready for the next exercise!";
+                            timerElement.classList.add('pulse');
+                            document.body.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            timeLeft = 10;
+                            totalTime = 10;
+                            updateTimerDisplay();
+                            startCountdown(true);
+                        } else {
+                            exerciseName.classList.add('shake');
+                            timerElement.classList.remove('pulse');
+                            document.body.style.backgroundColor = "#000";
+                            currentExerciseIndex++;
+                            startExercise();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+        }
+
+        function skipExercise() {
+            clearInterval(timerInterval);
+            currentExerciseIndex++;
+            startExercise();
+        }
+
+        function stopWorkout() {
+            clearInterval(timerInterval);
+            workoutContainer.style.display = "none";
+            currentExerciseIndex = 0;
+            timeLeft = 0;
+            totalTime = 0;
+            updateTimerDisplay();
+            isPaused = false;
+            generateBtn.style.display = "block";
+            completeWorkout();
+        }
+
+        function isWorkoutCompletedToday() {
+            const today = new Date();
+            const todayDate = today.toDateString();
+            return lastWorkoutDate && lastWorkoutDate.toDateString() === todayDate;
+        }
+
+        function loadStreakData() {
+            try {
+                const storedStreak = localStorage.getItem('streak');
+                const storedLastWorkoutDate = localStorage.getItem('lastWorkoutDate');
+                streak = storedStreak ? parseInt(storedStreak) : 0;
+                lastWorkoutDate = storedLastWorkoutDate ? new Date(storedLastWorkoutDate) : null;
+                updateStreakDisplay();
+            } catch (error) {
+                console.error('Error loading streak data from localStorage:', error);
+            }
+        }
+
+        function updateStreakDisplay() {
+            streakCount.textContent = streak;
+            streakDays.forEach((day, index) => {
+                if (index < streak) {
+                    day.classList.add('completed');
+                } else {
+                    day.classList.remove('completed');
+                }
+            });
+        }
+
+        function completeWorkout() {
+            const today = new Date();
+            const todayDate = today.toDateString();
+
+            if (!isWorkoutCompletedToday()) {
+                streak++;
+                completedToday = true;
+                lastWorkoutDate = today;
+                updateStreakDisplay();
+                saveStreakData();
+            }
+        }
+
+        function saveStreakData() {
+            try {
+                localStorage.setItem('streak', streak.toString());
+                localStorage.setItem('lastWorkoutDate', lastWorkoutDate.toISOString());
+            } catch (error) {
+                console.error('Error saving streak data to localStorage:', error);
+            }
+        }
+
+        function resetWorkout() {
+            clearInterval(timerInterval);
+            workoutContainer.style.display = "none";
+            currentExerciseIndex = 0;
+            timeLeft = 0;
+            totalTime = 0;
+            updateTimerDisplay();
+            isPaused = false;
+            generateBtn.style.display = "block";
+        }
+
+        stopBtn.addEventListener('click', function() {
+            resetWorkout();
+        });
+
+        // Add these class changes in the startCountdown function.
+        function startCountdown(isRest) {
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateTimerDisplay();
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (!isRest) {
+                            exerciseName.textContent = "Rest";
+                            exerciseDescription.textContent = "Get ready for the next exercise!";
+                            timerElement.classList.add('pulse');
+                            document.body.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            timeLeft = 10;
+                            totalTime = 10;
+                            updateTimerDisplay();
+                            startCountdown(true);
+                        } else {
+                            exerciseName.classList.add('shake');
+                            timerElement.classList.remove('pulse');
+                            document.body.style.backgroundColor = "#000";
+                            currentExerciseIndex++;
+                            startExercise();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        // Remove the shake class after the animation.
+        exerciseName.addEventListener('animationend', () => {
+            exerciseName.classList.remove('shake');
+        });
+
+        // Disable the skip button on the last exercise.
+        if (currentExerciseIndex === currentWorkout.length - 1) {
+            skipBtn.disabled = true;
+        } else {
+            skipBtn.disabled = false;
+        }
+
+        // Add a title attribute to each streak day for a tooltip.
+        streakDays.forEach((day, index) => {
+            day.title = `Day ${index + 1}`;
+        });
+    </script>
+</body>
+</html>
