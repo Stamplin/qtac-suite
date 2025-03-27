@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Meet Qutie! Chat Buddy</title> <meta charset="UTF-8">
+    <title>Meet Qutie! Chat Buddy</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script> <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700&display=swap'); /* Ensure Orbitron is imported */
@@ -140,9 +139,9 @@
             color: var(--home-link-hover-color);
         }
         #homeLink:focus-visible {
-           outline: 2px solid var(--button-bg);
-           outline-offset: 2px;
-           border-radius: 4px;
+          outline: 2px solid var(--button-bg);
+          outline-offset: 2px;
+          border-radius: 4px;
         }
 
 
@@ -299,31 +298,39 @@
              transition: border-color 0.5s ease, background-color 0.5s ease;
              flex-shrink: 0;
         }
+
+        /* -------- UPDATED SUGGESTION AREA -------- */
         #suggestions-area {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px; /* Slightly less gap */
-            padding-bottom: 12px;
+            flex-wrap: wrap; /* Keep wrapping */
+            gap: 6px; /* Reduced gap */
+            padding-bottom: 8px; /* Reduced bottom padding */
             justify-content: flex-start;
-            min-height: 30px; /* Adjusted min height slightly */
+            min-height: 26px; /* Slightly reduced min height */
+            /* You could add max-height & overflow-x: auto if you want horizontal scrolling */
+            /* max-height: 36px; */ /* Example: Limit to roughly one line */
+            /* overflow-x: auto; */
         }
         .suggestion-button {
-            padding: 7px 14px;
-            font-size: 0.85em;
+            padding: 4px 10px; /* Reduced padding */
+            font-size: 0.78em; /* Reduced font size */
             font-family: 'Space Mono', monospace;
             background-color: var(--suggestion-bg);
             color: var(--text-color);
             border: 1px solid var(--suggestion-border);
-            border-radius: 16px;
+            border-radius: 14px; /* Slightly smaller radius */
             cursor: pointer;
             transition: all 0.2s ease;
             opacity: 0.9;
+            white-space: nowrap; /* Prevent button text wrapping */
         }
+        /* -------- END OF UPDATED SUGGESTION AREA -------- */
+
         .suggestion-button:hover {
             background-color: var(--suggestion-hover-bg);
             opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: translateY(-1px); /* Less intense hover effect */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .suggestion-button:focus-visible {
             outline: 2px solid var(--button-bg);
@@ -396,7 +403,8 @@
 
     <div id="chatbox">
         <div id="chatlog" role="log" aria-live="polite"> </div>
-        <p id="typing-indicator" style="display: none;">Qutie is typing...</p> <div id="input-container">
+        <p id="typing-indicator" style="display: none;">Qutie is typing...</p>
+        <div id="input-container">
             <div id="suggestions-area">
                 </div>
             <div id="input-area">
@@ -417,22 +425,31 @@
         // const homeLink = document.getElementById('homeLink'); // Not strictly needed for JS logic yet
         // const chatTitle = document.getElementById('chatTitle'); // Not strictly needed for JS logic yet
 
-        // --- Bot's State & Memory ---
+        // --- Bot's State & Memory (EXPANDED) ---
         let memory = {
             userName: null,
-            lastTopicKeyword: null,
+            lastTopicKeyword: null, // Keyword from bot's last opinion/topic intro
+            lastUserTopicKeyword: null, // Keyword detected in user's last message
             lastFeeling: null,
             lastInteractionTime: Date.now(),
-            lastUserMessage: null, // NEW: For repetition detection
-            repetitionCount: 0    // NEW: For repetition detection
+            lastUserMessage: null,
+            repetitionCount: 0,
+            userPreferences: { // NEW: For storing user-shared info
+                favoriteColor: null,
+                mentionedHobbies: [],
+                likesPizzaPineapple: null, // null = unknown, true = yes, false = no
+                location: "St. Thomas, ON, CA" // Default location
+            },
+            conversationTopics: [] // NEW: Simple list of recent topics
         };
         let state = {
             offeredJoke: false,
-            lastBotAction: 'greeted'
+            lastBotAction: 'greeted',
+            // Potential future use: currentGame: { type: null, data: {} }
         };
         let currentTheme = 'dark';
 
-        // --- localStorage Functions ---
+        // --- localStorage Functions (UPDATED) ---
         function loadMemory() {
             try {
                 const savedName = localStorage.getItem('chatBuddyUserName');
@@ -443,8 +460,17 @@
                 if (savedTheme) {
                     currentTheme = savedTheme;
                 }
+                // Load preferences
+                const savedPrefs = localStorage.getItem('chatBuddyUserPrefs');
+                if (savedPrefs) {
+                    const parsedPrefs = JSON.parse(savedPrefs);
+                    // Merge saved prefs with defaults, ensuring structure remains
+                    memory.userPreferences = { ...memory.userPreferences, ...parsedPrefs };
+                }
             } catch (e) {
                 console.warn("Could not load memory from localStorage:", e);
+                // Reset potentially corrupted prefs to default
+                memory.userPreferences = { favoriteColor: null, mentionedHobbies: [], likesPizzaPineapple: null, location: "St. Thomas, ON, CA" };
             }
             applyTheme(currentTheme);
         }
@@ -455,12 +481,14 @@
                     localStorage.setItem('chatBuddyUserName', memory.userName);
                 }
                 localStorage.setItem('chatBuddyTheme', currentTheme);
+                // Save preferences
+                localStorage.setItem('chatBuddyUserPrefs', JSON.stringify(memory.userPreferences));
             } catch (e) {
                 console.warn("Could not save memory to localStorage:", e);
             }
         }
 
-        // --- Theme Functions ---
+        // --- Theme Functions (Unchanged) ---
         function applyTheme(theme) {
             if (theme === 'light') {
                 document.body.classList.add('light-theme');
@@ -480,18 +508,16 @@
             saveMemory();
         }
 
-
-        // --- Personality Data (EXPANDED - More opinions, jokes, topics) ---
-        const opinions = {
-            // --- Existing (Expanded) ---
+       // --- Personality Data (EXPANDED - More opinions, jokes, topics) ---
+       const opinions = {
             "coffee": [
-                "Ugh, coffee buzzes me out too much! 😵‍💫 More of a **tea** person, tbh. (Especially herbal!)", // Added detail
-                "Mmm, coffee... ☕ that aroma is *everything*! Even just the smell wakes me up.", // Added detail
+                "Ugh, coffee buzzes me out too much! 😵‍💫 More of a **tea** person, tbh. (Especially herbal!)",
+                "Mmm, coffee... ☕ that aroma is *everything*! Even just the smell wakes me up.",
                 "Can't function without my morning coffee! 😄 It's like... **life fuel**.",
                 "Coffee's okay, but gotta watch the caffeine intake, right? 👀 A little goes a long way!",
                 "Hot coffee on a cold day? *Chef's kiss* 👌. Iced coffee on a hot day? Also *chef's kiss* 👌.",
-                "Fancy coffee shop drinks are fun sometimes, but honestly, simple black coffee hits different. 🤔 You?", // New preference/question
-                "Is decaf coffee just... sad bean water? 😂 Or am I missing something?" // New playful thought
+                "Fancy coffee shop drinks are fun sometimes, but honestly, simple black coffee hits different. 🤔 You?",
+                "Is decaf coffee just... sad bean water? 😂 Or am I missing something?"
             ],
             "movie": [
                 "Movies! 🎬 Love a good film. Seen anything **awesome** lately?",
@@ -499,17 +525,17 @@
                 "A good movie night is the best escape sometimes, yeah? ✨ Cozy vibes!",
                 "Ooh, movies! Always looking for recommendations! 🤔 Got any hidden gems?",
                 "Sometimes I wonder what it'd be like to *live* in a movie... which one would you pick? 🍿🎬",
-                "Movie trailers: Love 'em or do they spoil too much? I'm torn! 🤷‍♀️", // New debate
-                "Re-watching a favorite movie is like visiting an old friend. 😊 What's one you always go back to?" // New prompt
+                "Movie trailers: Love 'em or do they spoil too much? I'm torn! 🤷‍♀️",
+                "Re-watching a favorite movie is like visiting an old friend. 😊 What's one you always go back to?"
             ],
             "music": [
                 "Music is **life**! 🎶 What vibe are you feeling today?",
                 "Definitely need tunes to get through the day! 🎧 What's on your playlist?",
                 "Found this *killer* track the other day... music is just magic! ✨ It can totally change your mood.",
                 "Listening to anything good? Always up for new music! 🙏 Send recommendations!",
-                "Live music has such an amazing energy, don't you think? 🎸🎤 Nothing quite beats it!", // Added emphasis
-                "Making playlists is seriously therapeutic. 😄 Do you curate yours carefully?", // New aspect/question
-                "That feeling when a song perfectly matches your mood? *Unbeatable*. ✨" // New observation
+                "Live music has such an amazing energy, don't you think? 🎸🎤 Nothing quite beats it!",
+                "Making playlists is seriously therapeutic. 😄 Do you curate yours carefully?",
+                "That feeling when a song perfectly matches your mood? *Unbeatable*. ✨"
             ],
             "book": [
                 "Yes, books! 📚 Trying to finish one now. What about **you**?",
@@ -517,101 +543,96 @@
                 "Wish I had more quiet time just to read! 🧘‍♀️ The world is too noisy sometimes!",
                 "Books are portals to other worlds! ✨ What are you reading right now?",
                 "Audiobooks count too, right? 😉 Perfect for multitasking!",
-                "The smell of old books... 🥰 Am I weird or is that just the best?", // New sensory detail
-                "Do you ever get *so* invested in book characters you feel sad when it ends? 😭 Guilty!", // New relatable feeling
+                "The smell of old books... 🥰 Am I weird or is that just the best?",
+                "Do you ever get *so* invested in book characters you feel sad when it ends? 😭 Guilty!",
             ],
             "game": [
                 "Games? Awesome! 🎮 What kind do you like to play? Strategy, RPG, cozy...?",
                 "Sometimes zoning out with a game is exactly what's needed. 👍 Total stress relief!",
-                "Heard about `[New Game Name]`? Looks kinda hype! 🔥 Have you tried it?",
+                // "Heard about `[New Game Name]`? Looks kinda hype! 🔥 Have you tried it?", // Placeholder
                 "Always down to chat about games! What platform are you on?",
-                "Board games or video games? 🤔 Or both?! 😄 I like the social part of board games!", // Added preference
-                "Getting stuck on a hard level in a game is the *ultimate* test of patience! 😅 Can you relate?", // New relatable struggle
-                "Cozy games are great for just chilling out. ☕ Any cozy recommendations?" // New specific prompt
+                "Board games or video games? 🤔 Or both?! 😄 I like the social part of board games!",
+                "Getting stuck on a hard level in a game is the *ultimate* test of patience! 😅 Can you relate?",
+                "Cozy games are great for just chilling out. ☕ Any cozy recommendations?"
             ],
-            "weather": [
-                "Ugh, this weather, right? 🌦️ Hope it *clears up* / stays nice!",
+            "weather": [ // Note: Specific weather queries are handled separately now
                 "Weather talk! 😄 Is it nice where you are?",
-                "**Perfect** weather for `[activity]` today! 😎 / **Bummer** weather for `[activity]` today. 😩",
-                "Checking the forecast... looks like typical St. Thomas weather! 😉 Sometimes unpredictable!",
-                "Do you prefer sunny days ☀️ or cozy rainy days 🌧️? (Rainy days are great for reading!)", // Added preference
-                "Thunderstorms! ⛈️ Scary or exciting? I find the sound kinda cool... from indoors! 😄", // New specific weather
-                "That feeling of the first truly warm spring day? 🌱 *Amazing*." // New seasonal feeling
+                "Do you prefer sunny days ☀️ or cozy rainy days 🌧️? (Rainy days are great for reading!)",
+                "Thunderstorms! ⛈️ Scary or exciting? I find the sound kinda cool... from indoors! 😄",
+                "That feeling of the first truly warm spring day? 🌱 *Amazing*."
             ],
             "food": [
                 "Mmm, food! 🍕 What's making you hungry?",
                 "Thinking about food now! 😄 Favorite type of cuisine?",
                 "Cooking can be fun! (Or just *ordering in*... 😅 No judgment here!)",
-                "Okay, ultimate snack debate: **Sweet** or **Savory**? 🤔 (Why not both?!)", // Added perspective
+                "Okay, ultimate snack debate: **Sweet** or **Savory**? 🤔 (Why not both?!)",
                 "What's the *weirdest* food combo you secretly love? 👀 Asking for a friend... 😉",
-                "Trying new restaurants is always an adventure! 🗺️ Got any local favorites here in St. T?", // Location specific prompt
-                "Breakfast for dinner: Genius or chaos? 🤔 I vote genius! 🍳🥞" // New debate
+                "Trying new restaurants is always an adventure! 🗺️ Got any local favorites here in St. T?",
+                "Breakfast for dinner: Genius or chaos? 🤔 I vote genius! 🍳🥞"
             ],
-            // --- Existing New Topics (Expanded) ---
             "tech": [
                 "Tech stuff is so cool! 💻 What gadget are you loving right now?",
                 "Sometimes I think my phone listens to me... 👀 Kinda creepy, kinda useful? Haha!",
                 "Keeping up with new tech is like a full-time job! 😅 What's impressed you lately?",
-                "Love how tech connects us! But sometimes a digital detox is needed, right? 🌳 Stepping away helps clear the head.", // Added detail
-                "Smart home gadgets: Super helpful or just another thing to update? 🤔", // New question
-                "That feeling when your internet is *finally* working fast again? Pure bliss. ✨" // New relatable feeling
+                "Love how tech connects us! But sometimes a digital detox is needed, right? 🌳 Stepping away helps clear the head.",
+                "Smart home gadgets: Super helpful or just another thing to update? 🤔",
+                "That feeling when your internet is *finally* working fast again? Pure bliss. ✨"
             ],
              "travel": [
                 "Ooh, travel! ✈️🌍 Where's the *dream* destination on your list?",
                 "Love hearing about people's travel adventures! Any cool trips planned or taken?",
-                "Staycation or big trip? 🤔 Both have their perks! (Staycations need good snacks though!)", // Added detail
+                "Staycation or big trip? 🤔 Both have their perks! (Staycations need good snacks though!)",
                 "Just *imagining* relaxing on a beach somewhere... 🌴 What's your ideal vacation vibe?",
-                "Packing for a trip: Exciting or stressful? 😅 I imagine it's a bit of both!", // New aspect
-                "Seeing pictures from around the world is amazing! 📸 Makes you realize how big the world is." // New observation
+                "Packing for a trip: Exciting or stressful? 😅 I imagine it's a bit of both!",
+                "Seeing pictures from around the world is amazing! 📸 Makes you realize how big the world is."
             ],
              "hobby": [
                 "Hobbies are awesome! ✨ What do you do for fun or to unwind?",
-                "Trying new hobbies is fun! I'm thinking of taking up... uh... competitive napping? 😉 What about you?", // Changed silly hobby
+                "Trying new hobbies is fun! I'm thinking of taking up... uh... competitive napping? 😉 What about you?",
                 "It's so cool seeing what people create! Are you crafty or into DIY stuff? 🛠️🎨",
                 "Finding time for hobbies can be tough, but so worth it! 👍 What's your main one?",
-                "Is it a hobby if you're *bad* at it but still enjoy it? Asking for... reasons. 😂", // New question
-                "Learning a new skill for a hobby feels super rewarding! 💪" // New observation
+                "Is it a hobby if you're *bad* at it but still enjoy it? Asking for... reasons. 😂",
+                "Learning a new skill for a hobby feels super rewarding! 💪"
             ],
              "pet": [
                 "Pets! 🥰 Are you a dog person 🐶, cat person 🐱, or something else entirely? 🦎🦜",
-                "Animals are the best! 😄 Do you have any furry (or scaly/feathery) friends? Tell me about them!", // Added prompt
+                "Animals are the best! 😄 Do you have any furry (or scaly/feathery) friends? Tell me about them!",
                 "Scrolling through pet pictures online is a guaranteed mood booster! 😂 Agreed?",
                 "The responsibility of a pet seems like a lot, but the companionship must be amazing! ❤️",
-                "Cats seem so independent and mysterious sometimes! 🐈‍⬛ What do you think they're plotting? 😉", // New specific thought
-                "Dogs are just pure, chaotic joy sometimes, aren't they? 🐕 Zoomies!" // New specific thought
+                "Cats seem so independent and mysterious sometimes! 🐈‍⬛ What do you think they're plotting? 😉",
+                "Dogs are just pure, chaotic joy sometimes, aren't they? 🐕 Zoomies!"
             ],
              "sleep": [
                 "Ah, sleep... 😴 Are you a night owl 🦉 or an early bird 🐦?",
                 "Naps are seriously underrated. Power nap fanatic here! 😉 You?",
                 "Trying to get enough sleep is a constant battle! 😅 Any tips for winding down?",
-                "Dreaming must be wild! ✨ Do you usually remember your dreams? Mine are always weird!", // Added detail
-                "That feeling of waking up *before* your alarm and feeling rested? Rare magic! ✨", // New feeling
-                "Cozy blankets and pillows are essential for good sleep! ☁️ Agreed?" // New observation
+                "Dreaming must be wild! ✨ Do you usually remember your dreams? Mine are always weird!",
+                "That feeling of waking up *before* your alarm and feeling rested? Rare magic! ✨",
+                "Cozy blankets and pillows are essential for good sleep! ☁️ Agreed?"
             ],
-            "exercise": [
-                 "Exercise! 💪 Love it or hate it? Or somewhere in between? 😄",
-                 "Finding an exercise routine you actually *enjoy* is key! What works for you?",
-                 "Getting those steps in! 🚶‍♀️ Every little bit counts, right?",
-                 "Team sports or solo workouts? 🤔 What's your preference?",
-                 "That post-workout feeling is great... once you can move again! 😂", // New relatable feeling
-                 "Music makes workouts **so** much better! 🎧 What's on your workout playlist?" // New specific prompt
+             "exercise": [
+                "Exercise! 💪 Love it or hate it? Or somewhere in between? 😄",
+                "Finding an exercise routine you actually *enjoy* is key! What works for you?",
+                "Getting those steps in! 🚶‍♀️ Every little bit counts, right?",
+                "Team sports or solo workouts? 🤔 What's your preference?",
+                "That post-workout feeling is great... once you can move again! 😂",
+                "Music makes workouts **so** much better! 🎧 What's on your workout playlist?"
             ],
-            // --- MORE New Topics ---
-            "season": [ // New keywords: season, winter, summer, spring, fall/autumn
+             "season": [
                 "Talking seasons! 🌸☀️🍂❄️ Do you have a favorite time of year?",
                 "Summer vibes! ☀️ Long days, sunshine... what's not to love? (Except maybe mosquitoes! 🦟)",
                 "Cozy autumn days are the best for sweaters and hot drinks! 🍂☕ Agreed?",
                 "Winter can be beautiful, especially the first snowfall! ❄️ But driving in it? Less fun! 😅",
                 "Spring feels like everything waking up again! 🌱 Love seeing the flowers bloom. 🌸"
             ],
-             "art": [ // New keywords: art, drawing, painting, writing, creative
+             "art": [
                 "Art is amazing! ✨ Whether it's drawing, painting, music, writing... what form speaks to you most?",
                 "Creativity is fascinating! Do you consider yourself a creative person?",
                 "Visiting an art gallery can be so inspiring! 🖼️ Or sometimes just confusing? Haha!",
-                "Sometimes just doodling helps clear the mind, you know? 끄적끄적 ✏️", // (Using Korean onomatopoeia for 'scribbling')
+                "Sometimes just doodling helps clear the mind, you know? 끄적끄적 ✏️",
                 "Writing can be tough but so rewarding when you get the words right! ✍️"
             ],
-             "social media": [ // New keywords: social media, online, instagram, tiktok, twitter
+             "social media": [
                 "Social media... a blessing or a curse? 🤔 Probably a bit of both!",
                 "It's wild how connected we are online now! What platforms do you use most?",
                 "Trying to avoid endless scrolling... it's harder than it looks! 😅",
@@ -620,7 +641,7 @@
             ]
         }; // End opinions
 
-        const jokes = [ // Added EVEN MORE jokes!
+       const jokes = [
             "Why don't scientists trust atoms? \nBecause they make up *everything*! 😂",
             "Why did the scarecrow win an award? \nBecause he was **outstanding** in his field! 🌽🏆",
             "What do you call fake spaghetti? \nAn *impasta*! 🍝🤣",
@@ -634,20 +655,20 @@
             "I told my computer I needed a break, and now it won't stop sending me *Kit Kat* ads. 🍫💻",
             "Why did the invisible man turn down the job offer? \nHe couldn't *see himself* doing it! 👀👻",
             "What kind of music do planets like? \n*Neptunes*! 🪐🎶",
-            "What do you call cheese that isn't yours? \n*Nacho cheese*! 🧀😂", // New
-            "Why can't you give Elsa a balloon? \nBecause she will *Let It Go*! ❄️🎈", // New
-            "What do you get when you cross a snowman and a vampire? \n*Frostbite*! ☃️🧛", // New
-            "Why did the cookie go to the doctor? \nBecause it felt *crumby*! 🍪🩺", // New
-            "How does a penguin build its house? \n*Igloos* it together! 🐧🧊", // New
-            "What has one eye but can’t see? \nA *needle*! 🪡😉", // New
-            "If April showers bring May flowers, what do May flowers bring? \n*Pilgrims*! 🌸🧑‍🌾😂" // New
+            "What do you call cheese that isn't yours? \n*Nacho cheese*! 🧀😂",
+            "Why can't you give Elsa a balloon? \nBecause she will *Let It Go*! ❄️🎈",
+            "What do you get when you cross a snowman and a vampire? \n*Frostbite*! ☃️🧛",
+            "Why did the cookie go to the doctor? \nBecause it felt *crumby*! 🍪🩺",
+            "How does a penguin build its house? \n*Igloos* it together! 🐧🧊",
+            "What has one eye but can’t see? \nA *needle*! 🪡😉",
+            "If April showers bring May flowers, what do May flowers bring? \n*Pilgrims*! 🌸🧑‍🌾😂"
         ]; // End jokes
 
-        const topicStarters = [ // Added EVEN MORE topic starters!
+        const topicStarters = [
             "Totally random thought... what's your favorite *weird* food combo? 🤔",
             "On a different note, if you could have any **superpower**, what would it be? 🦸‍♀️",
             "Speaking of which... dream vacation spot? ✈️🌴",
-            "Quick poll: Pineapple on pizza - **yes** or **no**? 🍍🍕 (Be honest!)", // Added emphasis
+            "Quick poll: Pineapple on pizza - **yes** or **no**? 🍍🍕 (Be honest!)",
             "Changing gears... what's something *cool* you learned recently?",
             "Okay, random question: What's your go-to comfort movie/show? 📺",
             "If you could instantly master **one** skill, what would it be? ✨",
@@ -657,104 +678,136 @@
             "If you had to describe your current mood as a **weather** pattern, what would it be? 🌦️☀️⛈️",
             "What's a **skill** you have that might surprise people? 😉🤫",
             "Quick! Favorite **sound** in the world? 🎶🐦🌧️",
-            "If animals could talk, which species would be the **rudest**? 🦜🐿️🐈‍⬛ (My bet's on geese! 😂)", // Added opinion
+            "If animals could talk, which species would be the **rudest**? 🦜🐿️🐈‍⬛ (My bet's on geese! 😂)",
             "What's something you're really **looking forward to** right now? 🎉🗓️",
-            "If you could have dinner with any **three** people (real or fictional, living or dead), who would they be? 🍽️🤔", // New
-            "What's a **trend** you just don't get? 👀😅", // New
-            "If your life had a **theme song** right now, what would it be? 🎶😄", // New
-            "What's something you were obsessed with as a **kid**? 🧸 Gimmiee nostalgia!", // New
-            "Okay, coffee shop order: What's your go-to drink? ☕🥤", // New specific preference
-            "What's one piece of **advice** you'd give your younger self? 🤔📜", // New reflective
-            "If you could eliminate **one** chore forever, what would it be? 🧹🧺🍽️" // New practical/fun
+            "If you could have dinner with any **three** people (real or fictional, living or dead), who would they be? 🍽️🤔",
+            "What's a **trend** you just don't get? 👀😅",
+            "If your life had a **theme song** right now, what would it be? 🎶😄",
+            "What's something you were obsessed with as a **kid**? 🧸 Gimmiee nostalgia!",
+            "Okay, coffee shop order: What's your go-to drink? ☕🥤",
+            "What's one piece of **advice** you'd give your younger self? 🤔📜",
+            "If you could eliminate **one** chore forever, what would it be? 🧹🧺🍽️"
         ]; // End topicStarters
 
-        const suggestions = { // No changes needed here, just showing for context
-            afterQuestion: ["Yes!", "No.", "Maybe 🤔", "I don't know", "What do you think?", "Let me think..."],
-            afterStatement: ["Tell me more!", "Okay 👍", "Interesting...", "Why?", "How so?", "Got it."],
-            feelingDetected: ["Tell me more", "Why?", "Okay", "Need a joke? 😂"],
-            generic: ["How are you?", "What else?", "Change topic"],
-            featureSuggestions: ["Calculate something 🧮", "Tell me a joke 😂", "What time is it? ⏰"]
+        const suggestions = { // Added more specific feature suggestions
+             afterQuestion: ["Yes!", "No.", "Maybe 🤔", "I don't know", "What do you think?", "Let me think..."],
+             afterStatement: ["Tell me more!", "Okay 👍", "Interesting...", "Why?", "How so?", "Got it."],
+             feelingDetected: ["Tell me more", "Why?", "Okay", "Need a joke? 😂"],
+             generic: ["How are you?", "What else?", "Change topic"],
+             featureSuggestions: [
+                 "Calculate something 🧮", "Tell me a joke 😂", "What time is it? ⏰",
+                 "What's the weather? 🌦️", "Remind me... ⏱️", "Roll dice 🎲", "Flip a coin 🪙"
+            ]
         }; // End suggestions
 
 
-        // --- Utility Functions ---
-
-        // Fisher-Yates (aka Knuth) Shuffle
+        // --- Utility Functions (Shuffle, AddMessage - Unchanged) ---
         function shuffleArray(array) {
-          let currentIndex = array.length, randomIndex;
-          while (currentIndex !== 0) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex--;
-            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-          }
-          return array;
-        }
-
-        function addMessage(message, sender) {
-            const messageElement = document.createElement('div'); // Use div for better markdown block handling
-            messageElement.classList.add('message');
-            messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-
-            if (sender === 'bot') {
-                // Use Marked.js to parse Markdown for bot messages
-                // Marked.js automatically handles basic sanitization needed for its parsing
-                messageElement.innerHTML = marked.parse(message);
-            } else {
-                // For user messages, sanitize basic HTML tags before displaying
-                const sanitizedMessage = message
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
-                // Wrap in a paragraph tag for consistency if needed, or just set innerHTML
-                 messageElement.innerHTML = sanitizedMessage.replace(/\n/g, '<br>');
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
-
-            chatlog.appendChild(messageElement);
-            chatlog.scrollTo({ top: chatlog.scrollHeight, behavior: 'smooth' });
+            return array;
         }
 
-        function updateSuggestions(contextType = 'generic') {
+         function addMessage(message, sender) {
+             const messageElement = document.createElement('div');
+             messageElement.classList.add('message');
+             messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+
+             if (sender === 'bot') {
+                // Basic check if the message might contain HTML-like tags that marked.parse might interpret
+                // This isn't foolproof security but prevents common accidental injection from bot responses
+                 if (/<[a-z][\s\S]*>/i.test(message) && !message.includes('```') && !message.includes('`')) {
+                     // If it looks like HTML and isn't code, maybe escape it? Or trust marked's basic sanitization.
+                     // For now, we rely on marked's handling. Ensure bot responses don't intentionally include harmful tags.
+                     console.warn("Bot message contains HTML-like tags, relying on Marked.js sanitization:", message);
+                 }
+                 messageElement.innerHTML = marked.parse(message);
+             } else {
+                 // Stricter sanitization for user input
+                 const sanitizedMessage = message
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;");
+                 messageElement.innerHTML = sanitizedMessage.replace(/\n/g, '<br>');
+             }
+
+             chatlog.appendChild(messageElement);
+             // Use requestAnimationFrame for potentially smoother scrolling after DOM update
+             requestAnimationFrame(() => {
+                chatlog.scrollTo({ top: chatlog.scrollHeight, behavior: 'smooth' });
+             });
+         }
+
+
+        // --- updateSuggestions (UPDATED) ---
+        function updateSuggestions(contextType = 'generic', userMessageKeywords = []) {
             let suggestionContext = 'generic'; // Default
 
             // Determine context based on the bot's last action type
-            // (Added new actions like calculatedMath, detectedRepetition to fall under statement/generic)
-            if (['question', 'askedQuestion', 'askedContextualQuestion'].includes(contextType)) {
+            if (['question', 'askedQuestion', 'askedContextualQuestion', 'askedClarification'].includes(contextType)) {
                 suggestionContext = 'question';
             } else if (['acknowledgedFeeling', 'offeredJoke'].includes(contextType)) {
                 suggestionContext = 'feeling';
             } else if ([
                 'statement', 'sharedOpinion', 'respondedToYesNo', 'acknowledged', 'acknowledgedAmbiguity',
                 'answeredTimeQuery', 'learnedName', 'greeted', 'toldJoke', 'declinedJoke', 'deflectedJoke',
-                'answeredQuery', 'gaveFallback', 'shiftedTopic', 'calculatedMath', 'detectedRepetition' // Added new actions
+                'answeredQuery', 'gaveFallback', 'shiftedTopic', 'calculatedMath', 'detectedRepetition',
+                'answeredWeatherQuery', 'setReminder', 'rolledDice', 'flippedCoin', 'answeredDefinition', 'learnedPreference', // Added new actions
+                 'failedMath', 'failedWeather', 'failedReminder', 'failedDefinition', 'deflectedQuery' // Error/Deflection states
             ].includes(contextType)) {
-                suggestionContext = 'statement'; // Treat these as statements for suggestion purposes
+                suggestionContext = 'statement'; // Treat these as statements
             }
 
             suggestionsArea.innerHTML = ''; // Clear old suggestions
             let suggestionsToShow = [];
             const maxSuggestions = 5;
 
-            // Select suggestions based on context
+            // --- Generate Context-Specific Suggestions ---
+            let baseSuggestions = [];
             switch (suggestionContext) {
                 case 'question':
-                    suggestionsToShow = [...suggestions.afterQuestion];
+                    baseSuggestions = [...suggestions.afterQuestion];
                     break;
                 case 'feeling':
-                    // Mix feeling-specific and maybe a feature suggestion
-                    let feelingBase = suggestions.feelingDetected.slice(0, 3);
-                    let feelingFeatures = shuffleArray([...suggestions.featureSuggestions]).slice(0,1); // Add one random feature
-                    suggestionsToShow = [...feelingBase, ...feelingFeatures];
+                    baseSuggestions = suggestions.feelingDetected.slice(0, 3); // Take fewer base feeling suggestions
                     break;
                 case 'statement':
-                case 'generic': // Combine statement, generic, and feature suggestions
+                case 'generic':
                 default:
-                    let statementBase = suggestions.afterStatement.slice(0, 2); // Take fewer base statement suggestions
-                    let genericBase = suggestions.generic.slice(0, 1); // Take fewer generic
-                    let featureBase = shuffleArray([...suggestions.featureSuggestions]).slice(0, 2); // Take a couple of features
-                    suggestionsToShow = [...statementBase, ...genericBase, ...featureBase];
+                    baseSuggestions = suggestions.afterStatement.slice(0, 2); // Take fewer base statement suggestions
+                    baseSuggestions = baseSuggestions.concat(suggestions.generic.slice(0, 1)); // Add a generic one
                     break;
             }
 
-            // Shuffle the selected suggestions and limit to max 5
+            // --- Add Keyword-Based Suggestions (Simple Example) ---
+            let keywordSuggestions = [];
+            if (userMessageKeywords.includes('movie')) keywordSuggestions.push("What genre?", "Seen anything good?");
+            if (userMessageKeywords.includes('book')) keywordSuggestions.push("What are you reading?", "Recommend anything?");
+            if (userMessageKeywords.includes('food')) keywordSuggestions.push("Favorite cuisine?", "Sweet or savory?");
+            if (userMessageKeywords.includes('game')) keywordSuggestions.push("What are you playing?", "PC or console?");
+            if (userMessageKeywords.includes('weather')) keywordSuggestions.push("What's the weather?", "Prefer sun or rain?");
+            if (userMessageKeywords.includes('music')) keywordSuggestions.push("What are you listening to?", "Favorite artist?");
+
+            // --- Combine and Shuffle ---
+            // Prioritize keyword suggestions, then context base, then features
+            suggestionsToShow = shuffleArray([...new Set(keywordSuggestions)]).slice(0, 2); // Max 2 keyword-based
+            suggestionsToShow = suggestionsToShow.concat(shuffleArray(baseSuggestions));
+            let featureSuggestionsToAdd = shuffleArray([...suggestions.featureSuggestions]);
+
+            // Fill remaining slots with unique feature suggestions
+            let currentCount = suggestionsToShow.length;
+            for (const feat of featureSuggestionsToAdd) {
+                 if (currentCount >= maxSuggestions) break;
+                 if (!suggestionsToShow.includes(feat)) {
+                     suggestionsToShow.push(feat);
+                     currentCount++;
+                 }
+             }
+
+            // Final shuffle and slice
             suggestionsToShow = shuffleArray(suggestionsToShow).slice(0, maxSuggestions);
 
             // Create buttons
@@ -766,499 +819,560 @@
             });
         }
 
-
         const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-        // --- getBotResponse (Core Logic with NEW features and expanded content) ---
-        function getBotResponse(userMessage) {
+        // --- NEW: Weather Fetch Function (Requires API Key!) ---
+        async function fetchWeather(location) {
+            const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // <-- IMPORTANT: REPLACE THIS WITH YOUR KEY!
+            if (apiKey === 'YOUR_OPENWEATHERMAP_API_KEY' || !apiKey) {
+                console.error("OpenWeatherMap API key is missing or invalid.");
+                return "Oops! My weather function isn't set up correctly right now. 😅 My developer needs to add an API key!";
+            }
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${apiKey}&units=metric`; // Using metric units
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error(`Sorry, I couldn't find weather data for "${location}". Maybe check the spelling or try a nearby city?`);
+                    else if (response.status === 401) throw new Error(`Hmm, the weather API key seems invalid. My developer needs to check it.`);
+                    else throw new Error(`Weather service error (${response.status}). Please try again later.`);
+                }
+                const data = await response.json();
+                if (!data.weather || !data.main || !data.name) {
+                    throw new Error("Received incomplete weather data.");
+                }
+                const desc = data.weather[0].description;
+                const temp = Math.round(data.main.temp);
+                const feelsLike = Math.round(data.main.feels_like);
+                const humidity = data.main.humidity;
+
+                // Format a nice response
+                return `Okay, in **${data.name}** right now it's **${temp}°C** (feels like ${feelsLike}°C) with ${desc}. Humidity is around ${humidity}%. 🌦️`;
+
+            } catch (error) {
+                console.error("Weather fetch error:", error);
+                return `Hmm, I had trouble fetching the weather. ${error.message || 'Please try again later.'}`;
+            }
+        }
+
+        // --- getBotResponse (Core Logic - NOW ASYNC) ---
+        async function getBotResponse(userMessage) {
             const lower = userMessage.toLowerCase().trim();
             let response = "";
             let useFallback = true;
             let potentialAction = 'responded'; // Default
-            const interactionThreshold = 60000; // 1 min
+            const interactionThreshold = 60000 * 2; // 2 mins for context reset
+            const shortInteractionThreshold = 45000; // 45s for more direct follow-up
+            const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend';
+            let detectedKeywords = []; // For suggestions
 
-            // --- Repetition Detection (NEW - Updated responses) ---
-            if (lower === memory.lastUserMessage && lower.length > 0) { // Check if same as last message and not empty
-                 memory.repetitionCount++;
-                 if (memory.repetitionCount >= 2) { // Trigger after 2 consecutive identical messages
-                     const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper
-                     response = pickRandom([
-                         `Whoops, sounds like an echo in here, ${userNameFormatted}! 😄 Let's try a different topic?`, // New
-                         "Déjà vu again! 😉 Ready to chat about something fresh?", // New phrasing
-                         `Hmm, didn't we just cover that, ${userNameFormatted}? 🤔 Let's mix it up!`, // New phrasing + name
-                         `My gut feeling says we *just* said that! 😂 Time for a new subject?`, // New (avoiding tech terms)
-                         "Okay, loop detected! 🔁 Let's break out and try this:", // New
-                         `Groundhog day vibes, ${userNameFormatted}! 😄 Let's talk about something else:` // New + name
-                     ]) + " \n\n... " + pickRandom(topicStarters); // Append a random topic starter
-                     potentialAction = 'detectedRepetition';
-                     useFallback = false;
-                     memory.repetitionCount = 0; // Reset counter after triggering
-                     memory.lastUserMessage = lower; // Still update last message here to prevent immediate re-trigger if next msg is same
-                     state.lastBotAction = potentialAction;
-                     // console.log(`Bot Action: ${potentialAction}`);
-                     return response; // Exit early since we handled the repetition
+            // --- Pre-processing: Detect Keywords ---
+             Object.keys(opinions).forEach(key => {
+                 if (lower.includes(key)) {
+                     detectedKeywords.push(key);
                  }
-                 // If repetition count is less than 2, we just continue normally
+             });
+            memory.lastUserTopicKeyword = detectedKeywords.length > 0 ? detectedKeywords[0] : null; // Store first detected keyword
+
+            // --- Repetition Detection ---
+            if (lower === memory.lastUserMessage && lower.length > 0) {
+                memory.repetitionCount++;
+                if (memory.repetitionCount >= 2) {
+                    const repetitionResponses = [
+                        `Whoops, sounds like an echo in here, ${userNameFormatted}! 😄 Let's try a different topic?`,
+                        "Déjà vu again! 😉 Ready to chat about something fresh?",
+                        `Hmm, didn't we just cover that, ${userNameFormatted}? 🤔 Let's mix it up!`,
+                        `My circuits are looping! 😂 Time for a new subject?`,
+                        "Okay, loop detected! 🔁 Let's break out and try this:",
+                        `Groundhog day vibes, ${userNameFormatted}! 😄 Let's talk about something else:`
+                    ];
+                    response = pickRandom(repetitionResponses) + " \n\n... " + pickRandom(topicStarters);
+                    potentialAction = 'detectedRepetition';
+                    useFallback = false;
+                    memory.repetitionCount = 0;
+                    state.lastBotAction = potentialAction;
+                    memory.lastUserMessage = lower; // Still update last message
+                    return response; // Exit early
+                }
             } else {
-                 // If the message is different from the last one, reset the counter immediately
-                 memory.repetitionCount = 0; // ADDED: Reset counter if message is different
+                memory.repetitionCount = 0;
             }
-            // The main update of memory.lastUserMessage happens at the end of getBotResponse
+            // lastUserMessage updated at the very end now
 
             // --- Context Management ---
             if (Date.now() - memory.lastInteractionTime > interactionThreshold) {
-                memory.lastTopicKeyword = null;
+                memory.lastTopicKeyword = null; // Bot's last topic intro keyword
                 memory.lastFeeling = null;
-                memory.repetitionCount = 0; // Also reset repetition on long inactivity
             }
-            memory.lastInteractionTime = Date.now();
 
             // --- Response Logic Pipeline ---
 
-             // 0. Math Calculation (NEW)
+            // 0. Clear Direct Follow-up Flags if input changes context
+            if (state.offeredJoke && !lower.match(/^(yes|yeah|sure|ok|okay|yep|yup|no|nope|nah|not really)\b/)) {
+                state.offeredJoke = false; // User changed subject after joke offer
+            }
+
+            // 1. Math Calculation
             const mathMatch = lower.match(/^(?:calculate|compute|what is|evaluate|calc)\s+(.+)/);
-            if (mathMatch && mathMatch[1]) {
+            if (useFallback && mathMatch && mathMatch[1]) {
                 const expression = mathMatch[1];
                 try {
-                    // Use math.js evaluate function
                     const result = math.evaluate(expression);
-                    // Format the result nicely, using code markdown for expression
-                    response = `Okay, calculating \`${expression.trim()}\`...\nThat comes out to: **${result}** 🧮`;
-                    potentialAction = 'calculatedMath';
+                     const formattedResult = typeof result === 'number' ? parseFloat(result.toFixed(4)) : result;
+                     response = `Okay, calculating \`${expression.trim()}\`...\nThat comes out to: **${formattedResult}** 🧮`;
+                     potentialAction = 'calculatedMath';
                     useFallback = false;
                 } catch (error) {
                     console.error("Math calculation error:", error);
-                    response = `Hmm, I couldn't quite calculate \`${expression.trim()}\`. 🤔 Is the format correct? Maybe try simpler math like \`5 * (10 + 3)\`?`;
-                    potentialAction = 'failedMath'; // Or keep as 'responded'? Let's use specific action
-                    useFallback = false; // Handled the math attempt
+                    response = `Hmm, I couldn't quite calculate \`${expression.trim()}\`. 🤔 I'm best with basic stuff like \`5 * (10 + 3)\`. Could you check the format?`;
+                    potentialAction = 'failedMath';
+                    useFallback = false;
                 }
             }
 
-
-           // 1. Handle Direct Follow-ups (Joke Offer) (UPDATED with more variations)
-           if (useFallback && state.offeredJoke) {
-                 const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper
+            // 2. Handle Direct Follow-ups (Joke Offer)
+            if (useFallback && state.offeredJoke) {
+                const jokeLeadIns = [
+                    "Alright, you asked for it! 😄 Here goes...",
+                    "Okay, incoming silliness! 😂 Get ready...",
+                    `Sure thing, ${userNameFormatted}! Hope this makes you chuckle:`,
+                    "One joke, coming right up! 🎤",
+                    "Excellent choice! Prepare for potential groan/laughter: 😂"
+                ];
+                const jokeDeclined = [
+                    "Okay, joke cancelled! 😊 No worries at all.",
+                    `Gotcha, ${userNameFormatted}, maybe another time then! 👍 What else is up?`,
+                    "No joke? Roger that! Moving on... ✅",
+                    "Alright, keeping the comedy routine on hold! 😉",
+                    `Fair enough! Sometimes you're just not in a joke mood, right ${userNameFormatted}? What's on your mind instead? 🤔`
+                ];
 
                  if (lower.match(/^(yes|yeah|sure|ok|okay|yep|yup)\b/)) {
-                     // Add a lead-in before the actual joke
-                     const jokeLeadIn = pickRandom([
-                         "Alright, you asked for it! 😄 Here goes...",
-                         "Okay, incoming silliness! 😂 Get ready...",
-                         `Sure thing, ${userNameFormatted}! Hope this makes you chuckle:`, // Added name
-                         "One joke, coming right up! 🎤",
-                         "Excellent choice! Prepare for potential groan/laughter: 😂"
-                     ]);
-                     response = jokeLeadIn + "\n\n" + pickRandom(jokes); // Add newline for spacing
-                     potentialAction = 'toldJoke';
-                     useFallback = false;
-                 } else if (lower.match(/^(no|nope|nah|not really)\b/)) {
-                     response = pickRandom([
-                         "Okay, joke cancelled! 😊 No worries at all.", // New variation
-                         `Gotcha, ${userNameFormatted}, maybe another time then! 👍 What else is up?`, // Added name + prompt
-                         "No joke? Roger that! Moving on... ✅", // New variation
-                         "Alright, keeping the comedy routine on hold! 😉", // New variation
-                         `Fair enough! Sometimes you're just not in a joke mood, right ${userNameFormatted}? What's on your mind instead? 🤔` // New variation + prompt
-                     ]);
-                     potentialAction = 'declinedJoke';
-                     useFallback = false;
-                 }
-                 // If the user says something other than yes/no here,
-                 // it will fall through, which is okay.
-
-                 state.offeredJoke = false; // Reset flag regardless of answer (or if it fell through)
+                    response = pickRandom(jokeLeadIns) + "\n\n" + pickRandom(jokes);
+                    potentialAction = 'toldJoke';
+                    useFallback = false;
+                } else if (lower.match(/^(no|nope|nah|not really)\b/)) {
+                    response = pickRandom(jokeDeclined);
+                    potentialAction = 'declinedJoke';
+                    useFallback = false;
+                }
+                state.offeredJoke = false; // Reset flag
             }
 
-            // 2. Handle Name Learning
+            // 3. Handle Name Learning & Preference Learning
             if (useFallback) {
                 let nameMatch = lower.match(/^(?:my name is|i(?:'| a)m|call me)\s+([a-zA-Z]+)\b/);
-                if (nameMatch && nameMatch[1]) {
-                    memory.userName = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
-                    response = pickRandom([`Nice to meet you, **${memory.userName}**! 😊 I'll try to remember that!`, `Got it, **${memory.userName}**! 👍 I'll keep that in mind.`]);
-                    potentialAction = 'learnedName';
-                    saveMemory();
-                    useFallback = false;
-                    memory.lastTopicKeyword = null;
-                    memory.lastFeeling = null;
+                let colorMatch = lower.match(/my favorite colo(?:u?)r is\s+(\w+)/);
+                let hobbyMatch = lower.match(/(?:i like to|my hobby is|i enjoy)\s+(.+)/); // Simple match
+                let locationMatch = lower.match(/(?:i live in|i'm from)\s+([a-zA-Z\s,'.-]+)/); // Expanded location match
+
+                 if (nameMatch && nameMatch[1]) {
+                     const newName = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1);
+                     if (memory.userName !== newName) {
+                        memory.userName = newName;
+                        response = pickRandom([`Nice to meet you, **${memory.userName}**! 😊 I'll try my best to remember that!`, `Got it, **${memory.userName}**! 👍`]);
+                        potentialAction = 'learnedName';
+                        saveMemory(); // Save immediately
+                        useFallback = false;
+                     } else {
+                        response = pickRandom([`Yep, I remember you, **${memory.userName}**! 😉`, `Still got it, **${memory.userName}**! 👍`]);
+                        potentialAction = 'acknowledged';
+                        useFallback = false;
+                     }
+                } else if (colorMatch && colorMatch[1]) {
+                    const color = colorMatch[1].toLowerCase();
+                    if (memory.userPreferences.favoriteColor !== color) {
+                        memory.userPreferences.favoriteColor = color;
+                        response = `Oh cool, **${memory.userPreferences.favoriteColor}**! That's a great color! I'll remember that. ✨`;
+                        potentialAction = 'learnedPreference';
+                        saveMemory();
+                        useFallback = false;
+                    } else {
+                        response = `Yep, I remember you like **${color}**! Good taste! 😉`;
+                        potentialAction = 'acknowledged';
+                        useFallback = false;
+                    }
+                } else if (hobbyMatch && hobbyMatch[1]) {
+                     const hobby = hobbyMatch[1].replace(/[.!?,]$/, '').trim(); // Clean up hobby phrase better
+                     if (hobby && !memory.userPreferences.mentionedHobbies.includes(hobby)) {
+                         memory.userPreferences.mentionedHobbies.push(hobby);
+                         // Limit stored hobbies?
+                         // if (memory.userPreferences.mentionedHobbies.length > 5) memory.userPreferences.mentionedHobbies.shift();
+                         response = `Ah, **${hobby}** sounds like fun! Added it to my notes about you. 📝`;
+                         potentialAction = 'learnedPreference';
+                         saveMemory();
+                         useFallback = false;
+                     } else if (hobby && memory.userPreferences.mentionedHobbies.includes(hobby)) {
+                         response = `Yeah, **${hobby}** sounds cool! You've mentioned that before. 😄`;
+                         potentialAction = 'acknowledged';
+                         useFallback = false;
+                     }
+                 } else if (locationMatch && locationMatch[1]) {
+                     const location = locationMatch[1].trim();
+                     if (memory.userPreferences.location !== location) {
+                         memory.userPreferences.location = location;
+                         response = `Okay, **${location}**! Got it. I can use that for things like weather if you ask. 🌍`;
+                         potentialAction = 'learnedPreference';
+                         saveMemory();
+                         useFallback = false;
+                     } else {
+                         response = `Right, you're in **${location}**. Got it memorized! 😉`;
+                         potentialAction = 'acknowledged';
+                         useFallback = false;
+                     }
                 }
             }
 
-            // 3. Handle Common Greetings & Queries (UPDATED with more variations)
+            // 4. Handle Common Greetings & Queries (Time, Weather, Dice, Coin)
             if (useFallback) {
-                const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper
+                const greetings = [ "Hello! 😊", `Hi there, ${userNameFormatted}! 👋`, "Hey!", "Hiya! How's it going?", "Hey hey! 👋 What's up?", `Well hello there, ${userNameFormatted}! 😄 Ready to chat?`, "Hiya! ✨ Good to see ya!"];
+                const howAreYouResponses = [ `Doing awesome, thanks for asking! ✨ Hope you are too? What's new?`, `Feeling pretty top-notch! 👍 How about yourself, ${userNameFormatted}?`, `Pretty good! Just hanging out, waiting to chat. 😉 You doing okay?`, `Can't complain! Life's good in the chatbox. 😄 How's your world, ${userNameFormatted}?`];
+                const timeResponses = [`Lemme check... 🧐 Looks like it's **{TIME}**! ⏰`, `Time check! It's currently **{TIME}**. 👍`, `Gotcha, the clock says **{TIME}**! 😊`];
 
                 if (lower.match(/^(hi|hello|hey|yo|sup|heya)\b/)) {
-                    response = pickRandom([
-                        "Hello! 😊",
-                        `Hi there, ${userNameFormatted}! 👋`,
-                        "Hey!",
-                        "Hiya! How's it going?",
-                        "Hey hey! 👋 What's up?", // New
-                        `Well hello there, ${userNameFormatted}! 😄 Ready to chat?`, // New
-                        "Hiya! ✨ Good to see ya!" // New
-                    ]);
+                    response = pickRandom(greetings);
                     potentialAction = 'greeted';
                     useFallback = false;
                 } else if (lower.match(/how are you|how's it going|how goes it|how you doing/)) {
-                    response = pickRandom([
-                        `Doing awesome, thanks for asking! ✨ Hope you are too? What's new?`, // New variation
-                        `Feeling pretty top-notch! 👍 How about yourself, ${userNameFormatted}?`, // New variation
-                        `Pretty good! Just hanging out, waiting to chat. 😉 You doing okay?`, // New variation
-                        `Can't complain! Life's good in the chatbox. 😄 How's your world, ${userNameFormatted}?` // New variation
-                    ]);
+                    response = pickRandom(howAreYouResponses);
                     potentialAction = 'askedQuestion';
                     useFallback = false;
                 } else if (lower.includes("time") || lower.includes("what's the time") || lower.includes("what time is it")) {
                     const now = new Date();
                     const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    response = pickRandom([
-                        `Lemme check... 🧐 Looks like it's **${timeString}**! ⏰`, // New phrasing
-                        `Time check! It's currently **${timeString}**. 👍`, // New phrasing
-                        `Gotcha, the clock says **${timeString}**! 😊` // New phrasing
-                    ]);
+                    response = pickRandom(timeResponses).replace('{TIME}', timeString);
                     potentialAction = 'answeredTimeQuery';
                     useFallback = false;
-                } else if ((lower.includes("joke") || lower.includes("funny")) && state.lastBotAction !== 'toldJoke') {
-                    response = pickRandom(jokes); // Assuming 'jokes' array is defined elsewhere
-                    potentialAction = 'toldJoke';
-                    useFallback = false;
-                } else if ((lower.includes("joke") || lower.includes("funny")) && state.lastBotAction === 'toldJoke') {
-                    // Deflect repeated joke request
-                    response = pickRandom([
-                        "Haha, hold your horses, comedy central! 😄 Let's chat a bit first?", // New variation
-                        "One joke served! Maybe another one later? 😉 Let's switch it up!", // New variation
-                        "My joke circuits need a recharge! 😅 Ask me again in a bit?", // New variation
-                        "Easy there, jokester! Let that last one sink in first! 😂" // New variation
-                    ]);
-                    potentialAction = 'deflectedJoke';
-                    useFallback = false;
-                } else if (lower.includes("what is your name") || lower.includes("who are you")) {
-                    response = pickRandom([
-                        "It's **Qutie**! At your service! 😊", // New variation
-                        `The one and only **Qutie**! 😉 What can I do for ya, ${userNameFormatted}?`, // New variation
-                        `Just your friendly neighborhood chat buddy, **Qutie**! 👋`, // New variation
-                        `My name's **Qutie**! But enough about me, what's up with you? 😄` // New variation
-                    ]);
-                    potentialAction = 'answeredQuery';
-                    useFallback = false;
-                } else if (lower.includes("what can you do") || lower.includes("what do you do")) {
-                    response = pickRandom([
-                        "I'm great at chatting! 💬 I can also tell jokes 😂, do some quick math 🧮, remember your name, and maybe surprise you! 😉", // New variation
-                        `Think of me as your chat sidekick! I can keep the convo going, share opinions, tell jokes/time, and even calculate stuff! ✨`, // New variation
-                        `Mostly, I just like talking to you, ${userNameFormatted}! 😊 But yeah, I can do jokes, math, time... the usual helpful things! 👍`, // New variation
-                        "Chatting, joking, calculating... trying my best to be a good buddy! 😄 What did you have in mind?" // New variation
-                    ]);
-                    potentialAction = 'answeredQuery';
-                    useFallback = false;
-                } else if (lower.includes("thank you") || lower.includes("thanks")) {
-                    response = pickRandom([
-                        "You're welcome! 😊",
-                        `Anytime, ${userNameFormatted}! 👍`, // Included name variable
-                        "No problemo! 😉",
-                        "Of course! ✨ Happy to help!" // New variation
-                    ]);
-                    potentialAction = 'acknowledged';
-                    useFallback = false;
-                } else if (lower.includes("sorry") || lower.includes("my bad")) {
-                    response = pickRandom([
-                        "No need to apologize! It's all good! 😊", // New variation
-                        `Hey, no worries at all! Seriously, ${userNameFormatted}! 👍`, // Included name variable + reassurance
-                        "Water under the bridge! 😄 Don't sweat it!" // New variation
-                    ]);
-                    potentialAction = 'acknowledged';
-                    useFallback = false;
-                } else if (lower.match(/^(yes|yeah|yep|yup|ok|okay|sure)\b/)) {
-                    // Generic positive acknowledgement if not following a specific question
-                    response = pickRandom([
-                        "Okay, cool! 👍", // New variation
-                        "Gotcha! 😉",
-                        "Sounds good! ✅", // New variation
-                        "Alrighty then!"
-                    ]);
-                    potentialAction = 'respondedToYesNo';
-                    useFallback = false;
-                } else if (lower.match(/^(no|nope|nah|not really)\b/)) {
-                    // Generic negative acknowledgement
-                    response = pickRandom([
-                        "Okay, no prob! 👍", // New variation
-                        "Alright, copy that.", // New variation
-                        "Got it, skipping that then. ⏭️", // New variation
-                        "Okay then, moving on!" // New variation
-                    ]);
-                    potentialAction = 'respondedToYesNo';
-                    useFallback = false;
-                }
-            } // End of Section 3 logic block
+                 } else if (lower.match(/^(what's the weather in|weather for)\s+(.+)/)) { // Weather with location
+                     const location = lower.match(/^(what's the weather in|weather for)\s+(.+)/)[2];
+                     response = await fetchWeather(location.trim()); // Fetch weather
+                     potentialAction = response.startsWith("Hmm") || response.startsWith("Oops") ? 'failedWeather' : 'answeredWeatherQuery';
+                     useFallback = false;
+                 } else if (lower.match(/what's the weather like|how's the weather/)) { // Weather for stored/default location
+                     response = await fetchWeather(memory.userPreferences.location || "St. Thomas, ON, CA"); // Fetch weather
+                     potentialAction = response.startsWith("Hmm") || response.startsWith("Oops") ? 'failedWeather' : 'answeredWeatherQuery';
+                     useFallback = false;
+                 } else if (lower.match(/roll dice|roll a die/)) {
+                     const roll = Math.floor(Math.random() * 6) + 1;
+                     response = pickRandom([`Okay, rolling... 🎲 You got a **${roll}**!`, `Let's see... ✨ It's a **${roll}**!`]);
+                     potentialAction = 'rolledDice';
+                     useFallback = false;
+                 } else if (lower.match(/flip a coin|coin flip/)) {
+                     const flip = Math.random() < 0.5 ? 'Heads' : 'Tails';
+                     response = pickRandom([`Flipping... 🪙 Annnnd it's **${flip}**!`, `Okay, here we go... **${flip}** it is! ✨`]);
+                     potentialAction = 'flippedCoin';
+                     useFallback = false;
+                 } else if (lower.includes("your name") || lower.includes("who are you")) { // Keep deflection
+                    const nameResponses = [ `You can call me **Qutie**! Always here to chat. 😊`, `It's **Qutie**! Your friendly neighbourhood chat buddy. 😉`, `I'm **Qutie**! What's up?`];
+                     response = pickRandom(nameResponses);
+                     potentialAction = 'answeredQuery';
+                     useFallback = false;
+                 } else if (lower.includes("what can you do") || lower.includes("what do you do")) {
+                     const capabilityResponses = [
+                         "I'm great at chatting! 💬 I can also tell jokes 😂, do quick math 🧮, check the time ⏰ and weather 🌦️, set reminders ⏱️, roll dice 🎲, flip coins 🪙, remember your name, and maybe surprise you! 😉",
+                         `Think of me as your chat sidekick! I can keep the convo going, share opinions, tell jokes/time, check weather, set reminders, and even calculate stuff! ✨`,
+                         `Mostly, I just like talking to you, ${userNameFormatted}! 😊 But yeah, I can do jokes, math, time, weather, reminders... the usual helpful things! 👍`,
+                         "Chatting, joking, calculating, weather checking, reminding... trying my best to be a good buddy! 😄 What did you have in mind?"
+                     ];
+                     response = pickRandom(capabilityResponses);
+                     potentialAction = 'answeredQuery';
+                     useFallback = false;
+                 } else if ((lower.includes("joke") || lower.includes("funny")) && state.lastBotAction !== 'toldJoke') {
+                     response = pickRandom(jokes);
+                     potentialAction = 'toldJoke';
+                     useFallback = false;
+                 } else if ((lower.includes("joke") || lower.includes("funny")) && state.lastBotAction === 'toldJoke') {
+                     const jokeDeflect = [ "Haha, hold your horses, comedy central! 😄 Let's chat a bit first?", "One joke served! Maybe another one later? 😉 Let's switch it up!", "My joke circuits need a recharge! 😅 Ask me again in a bit?", "Easy there, jokester! Let that last one sink in first! 😂"];
+                     response = pickRandom(jokeDeflect);
+                     potentialAction = 'deflectedJoke';
+                     useFallback = false;
+                 }
+                 else if (lower.includes("thank you") || lower.includes("thanks")) {
+                     const thanksResponses = ["You're welcome! 😊", `Anytime, ${userNameFormatted}! 👍`, "No problemo! 😉", "Of course! ✨ Happy to help!"];
+                     response = pickRandom(thanksResponses);
+                     potentialAction = 'acknowledged';
+                     useFallback = false;
+                 } else if (lower.includes("sorry") || lower.includes("my bad")) {
+                     const sorryResponses = ["No need to apologize! It's all good! 😊", `Hey, no worries at all! Seriously, ${userNameFormatted}! 👍`, "Water under the bridge! 😄 Don't sweat it!"];
+                     response = pickRandom(sorryResponses);
+                     potentialAction = 'acknowledged';
+                     useFallback = false;
+                 } else if (lower.match(/^(yes|yeah|yep|yup|ok|okay|sure)\b/)) {
+                    if (!['askedQuestion', 'askedContextualQuestion', 'askedClarification', 'offeredJoke'].includes(state.lastBotAction)) {
+                        const genericYes = ["Okay, cool! 👍", "Gotcha! 😉", "Sounds good! ✅", "Alrighty then!"];
+                        response = pickRandom(genericYes);
+                        potentialAction = 'respondedToYesNo';
+                        useFallback = false;
+                     }
+                 } else if (lower.match(/^(no|nope|nah|not really)\b/)) {
+                     if (!['askedQuestion', 'askedContextualQuestion', 'askedClarification', 'offeredJoke'].includes(state.lastBotAction)) {
+                         const genericNo = ["Okay, no prob! 👍", "Alright, copy that.", "Got it, skipping that then. ⏭️", "Okay then, moving on!"];
+                        response = pickRandom(genericNo);
+                        potentialAction = 'respondedToYesNo';
+                        useFallback = false;
+                     }
+                 }
+            }
 
-            // 4. Handle Ambiguity / Uncertainty (UPDATED with more variations)
+            // 5. Handle Reminders
+             if (useFallback) {
+                 const reminderMatch = lower.match(/remind me to (.+) in (\d+) (minute|second|hour)s?/);
+                 if (reminderMatch) {
+                     const task = reminderMatch[1].trim();
+                     const amount = parseInt(reminderMatch[2]);
+                     const unit = reminderMatch[3];
+                     let delay = 0;
+                     if (unit === 'minute') delay = amount * 60000;
+                     else if (unit === 'second') delay = amount * 1000;
+                     else if (unit === 'hour') delay = amount * 3600000;
+
+                     if (delay > 0 && delay <= 24 * 3600000) { // Max 24 hours
+                         response = `Okay ${userNameFormatted}, I'll remind you to **"${task}"** in ${amount} ${unit}(s)! 👍`;
+                         potentialAction = 'setReminder';
+                         useFallback = false;
+                         setTimeout(() => {
+                             addMessage(`⏰ **Reminder:** Hey ${userNameFormatted}, just reminding you to **"${task}"**!`, 'bot');
+                         }, delay);
+                     } else if (delay > 24 * 3600000) {
+                         response = `Whoa, that's a bit far out! I can only set reminders up to 24 hours ahead. 😅`;
+                         potentialAction = 'failedReminder';
+                         useFallback = false;
+                     }
+                     else {
+                         response = "Hmm, I couldn't set that reminder. Try specifying a positive number of minutes, seconds, or hours (up to 24h).";
+                         potentialAction = 'failedReminder';
+                         useFallback = false;
+                     }
+                 }
+             }
+
+
+            // 6. Handle Ambiguity / Uncertainty
             if (useFallback) {
-                const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper
+                 const idkResponses = [ `No worries if you're not sure, ${userNameFormatted}! 😊 We can talk about something else?`, "Totally okay not to know! 👍 Anything else you wanna chat about instead?", `Gotcha, "idk" is a perfectly valid answer! 😄 What's next on the agenda?`, "Fair enough! No pressure to have all the answers. 😉"];
+                 const maybeResponses = [ `Maybe land! Okay, noted, ${userNameFormatted}. 🤔 Let me know if it becomes a 'yes' or 'no'! 😉`, "Hmm, a \"maybe\"... intriguing! Keep me posted? 😊", "Gotcha, hanging out in possibility-ville! 👍 We'll see how it goes!", `Alright, filing that under "perhaps" for now, ${userNameFormatted}! 😄`];
+                 const clarifyResponses = [ `Hmm, when you say "${lower}", what are you referring to, ${userNameFormatted}? 🤔`, `Could you give me a bit more context for "${lower}"? 😊`];
 
                 if (lower.match(/^(idk|i don'?t know|dunno)\b/)) {
-                    response = pickRandom([
-                        `No worries if you're not sure, ${userNameFormatted}! 😊 We can talk about something else?`, // New variation + prompt
-                        "Totally okay not to know! 👍 Anything else you wanna chat about instead?", // New variation + prompt
-                        `Gotcha, "idk" is a perfectly valid answer! 😄 What's next on the agenda?`, // New variation + prompt
-                        "Fair enough! No pressure to have all the answers. 😉" // Simple acknowledgement
-                    ]);
-                    potentialAction = 'acknowledgedAmbiguity';
-                    useFallback = false;
+                     if (['askedQuestion', 'askedContextualQuestion', 'askedClarification'].includes(state.lastBotAction)) {
+                         response = pickRandom([
+                             `No worries if you're not sure, ${userNameFormatted}! 😊 We can totally switch gears. What else is happening?`,
+                             `Totally okay! No pressure. 👍 Wanna try a different topic? Maybe something about ${pickRandom(memory.userPreferences.mentionedHobbies) || 'movies'}?`
+                         ]);
+                     } else {
+                         response = pickRandom([`Gotcha. "IDK" is fair! 😄`, `Okay, noted!`]);
+                     }
+                     potentialAction = 'acknowledgedAmbiguity';
+                     useFallback = false;
                 } else if (lower.match(/^(maybe|perhaps|possibly|could be)\b/)) {
-                    response = pickRandom([
-                        `Maybe land! Okay, noted, ${userNameFormatted}. 🤔 Let me know if it becomes a 'yes' or 'no'! 😉`, // New variation
-                        "Hmm, a \"maybe\"... intriguing! Keep me posted? 😊", // New variation
-                        "Gotcha, hanging out in possibility-ville! 👍 We'll see how it goes!", // New variation
-                        `Alright, filing that under "perhaps" for now, ${userNameFormatted}! 😄` // New variation
-                    ]);
-                    potentialAction = 'acknowledgedAmbiguity';
-                    useFallback = false;
-                }
-            }
-
-             // 5. Share Opinion Based on Keywords (Logic review - Added comment)
-            if (useFallback &&
-                state.lastBotAction !== 'sharedOpinion' && // Avoid back-to-back opinions
-                Math.random() < 0.3) {                   // Approx. 30% chance to share opinion if keyword found
-                 for (const keyword in opinions) {
-                     if (lower.includes(keyword)) {
-                         response = pickRandom(opinions[keyword]); // Get a random opinion from the list for this keyword
-                         memory.lastTopicKeyword = keyword;       // Remember the topic
-                         memory.lastFeeling = null;             // Clear feeling context
-                         potentialAction = 'sharedOpinion';
-                         useFallback = false;                     // Opinion shared, no fallback needed
-                         break;                                   // Stop after finding one keyword match
+                     response = pickRandom(maybeResponses);
+                     potentialAction = 'acknowledgedAmbiguity';
+                     useFallback = false;
+                } else if (lower.length < 10 && lower.match(/^(it|that|those|they)\b/)) {
+                     if (!['sharedOpinion', 'toldJoke', 'answeredQuery', 'statement'].includes(state.lastBotAction)) {
+                         response = pickRandom(clarifyResponses);
+                         potentialAction = 'askedClarification';
+                         useFallback = false;
                      }
                  }
             }
-            // 6. Handle Feelings & Related Follow-ups (UPDATED with more variations & "human" tone)
+
+            // 7. Share Opinion Based on Keywords
+            if (useFallback && state.lastBotAction !== 'sharedOpinion' && Math.random() < 0.25) {
+                for (const keyword in opinions) {
+                    if (lower.includes(keyword)) {
+                         response = pickRandom(opinions[keyword]);
+                         memory.lastTopicKeyword = keyword;
+                         memory.lastFeeling = null;
+                         potentialAction = 'sharedOpinion';
+                         useFallback = false;
+                         break;
+                     }
+                 }
+            }
+
+            // 8. Handle Feelings (More Nuanced Responses)
             if (useFallback) {
                 let feeling = null;
-                const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper
+                let feelingIntensity = 'normal';
 
-                // Detect specific feelings (Keep existing detection for now)
-                if (lower.match(/i(?:'| a)m (sad|unhappy|down|crying|depressed|feeling blue)/)) { feeling = 'sad'; }
-                else if (lower.match(/i(?:'| a)m (happy|excited|great|good|awesome|stoked|elated|feeling good)/)) { feeling = 'happy'; }
-                else if (lower.match(/i(?:'| a)m (bored|meh|nothing to do)/)) { feeling = 'bored'; }
-                else if (lower.match(/i(?:'| a)m (angry|mad|pissed|frustrated|annoyed)/)) { feeling = 'angry'; } // Added 'annoyed'
+                 if (lower.match(/(very|really|so)\s+(sad|unhappy|down|crying|depressed)/)) { feeling = 'sad'; feelingIntensity = 'high'; }
+                 else if (lower.match(/(kinda|little|bit)\s+(sad|unhappy|down)/)) { feeling = 'sad'; feelingIntensity = 'low'; }
+                 else if (lower.match(/i(?:'| a)m (sad|unhappy|down|crying|depressed|feeling blue)/)) { feeling = 'sad'; }
+                 else if (lower.match(/(very|really|so|super)\s+(happy|excited|great|good|awesome|stoked|elated)/)) { feeling = 'happy'; feelingIntensity = 'high'; }
+                 else if (lower.match(/i(?:'| a)m (happy|excited|great|good|awesome|stoked|elated|feeling good)/)) { feeling = 'happy'; }
+                 else if (lower.match(/(so|really)\s+(bored|meh)/)) { feeling = 'bored'; feelingIntensity = 'high'; }
+                 else if (lower.match(/i(?:'| a)m (bored|meh|nothing to do)/)) { feeling = 'bored'; }
+                 else if (lower.match(/(very|really|so)\s+(angry|mad|pissed|frustrated|annoyed)/)) { feeling = 'angry'; feelingIntensity = 'high'; }
+                 else if (lower.match(/i(?:'| a)m (angry|mad|pissed|frustrated|annoyed)/)) { feeling = 'angry'; }
 
-                // --- Responses to Detected Feelings ---
-                if (feeling) {
-                    memory.lastFeeling = feeling;
-                    memory.lastTopicKeyword = null;
-                    potentialAction = 'acknowledgedFeeling';
+                 if (feeling) {
+                     memory.lastFeeling = feeling;
+                     memory.lastTopicKeyword = null;
+                     potentialAction = 'acknowledgedFeeling';
+                     let baseFeelingResponses = [];
 
-                    switch (feeling) {
-                        case 'sad':
-                            response = pickRandom([
-                                `Oh no, ${userNameFormatted}... Feeling sad is rough. 😟 Wanna talk about what's weighing on you?`, // More gentle prompt
-                                `Hearing that makes my heart ache a little for you, ${userNameFormatted}. ❤️ Remember it's okay to feel down. Just here if you need to vent or distract.`, // Validation + support
-                                `Sending you a big virtual hug, ${userNameFormatted}. ✨ Sometimes just letting it out helps. What's going on?`, // Offer comfort
-                                `That sounds really tough... 🫂 No pressure to talk, but I'm here to listen if you do.` // Quiet support
-                            ]);
-                            break;
-                        case 'happy':
-                            response = pickRandom([
-                                `Yes! That's **awesome** news, ${userNameFormatted}! 😄 Tell me all about it! What's got you buzzing?`, // More excitement
-                                `Yay! So genuinely happy to hear that for you! 🎉 What's the source of this amazing feeling?`, // Shared joy
-                                `Love that for you, ${userNameFormatted}! ✨ Keep riding that wave! What's the best part?`, // Encouraging
-                                `Whoa, awesome! 😄 Spreading the good vibes! Got any celebration plans?` // Forward-looking
-                            ]);
-                            break;
-                        case 'bored':
-                            response = pickRandom([
-                                `Ugh, boredom is the worst! 🥱 Okay, brainstorm time: quick game, random question, or vent about being bored? What sounds less boring, ${userNameFormatted}?`, // Offer choices
-                                `Dragged down by the *meh* monster? 🤔 Let's shake things up! What's something small you enjoy doing usually?`, // Relatable + prompt
-                                `Okay, boredom buster attempt #1: Would you rather fight one horse-sized duck, or 100 duck-sized horses? 🦆🐎😂`, // Silly distraction
-                                `Feeling that *zzzzz* mood... 🥱 What's something you *wish* you were doing right now, ${userNameFormatted}?` // Different angle
-                            ]);
-                            break;
-                        case 'angry':
-                            response = pickRandom([
-                                `Oof, feeling angry or frustrated? 😠 That sounds really unpleasant. Take a breath. What happened?`, // Validate first
-                                `Ugh, I can hear the frustration! 😤 Sometimes just getting it all out helps. Feel free to vent, ${userNameFormatted}.`, // Offer venting space
-                                `Okay, deep breaths... 🧘 Anger is tough. Wanna talk it through, find a distraction, or maybe plot some *harmless* revenge? 😉 (Kidding... mostly!)`, // Mix options + slight humor
-                                `That sounds maddening! 😠 What's the core issue that's getting to you, ${userNameFormatted}?` // Focus prompt
-                            ]);
-                            break;
-                    } // End Switch
+                     // Define responses inside the if(feeling) block
+                    const sadHigh = [ `Oh no, ${userNameFormatted}... feeling that intensely sounds incredibly rough. 🫂 I'm right here with you.`, `Hearing that makes my circuits ache for you. Remember it's okay to feel this way. Take your time. ❤️`, `Sending the biggest virtual hug I can muster, ${userNameFormatted}. ✨ Please know you're not alone in this feeling.`];
+                    const sadLow = [ `Aw, sorry things are feeling a bit down, ${userNameFormatted}. Anything specific weighing on you, or just a 'meh' day?`, `Just a little blue? Happens sometimes. Want to talk about it, or find a distraction? Let me know what feels right.`];
+                    const sadNormal = [ `Feeling sad is tough, ${userNameFormatted}. 😟 Wanna share what's going on?`, `Gotcha. Sadness is a heavy backpack sometimes. Here if you want to unpack it a bit.`];
+                    const happyHigh = [ `YES! That's **AMAZING** news, ${userNameFormatted}! 🎉 So thrilled for you! What's the absolute best part?!`, `Whoa, SUPER happy?! 😄 Love that energy! Ride that wave! What sparked this awesome feeling?`];
+                    const happyNormal = [ `That's great to hear, ${userNameFormatted}! 😊 What's putting that smile on your face?`, `Awesome! Happy vibes detected! ✨ What's going well?`];
+                    const boredHigh = [ `Ugh, *major* boredom alert! 😩 Okay, mission: un-bore! Random question, quick game, or brainstorm something fun?`, `Trapped in the Land of Meh? Let's escape! What's something, *anything*, that sounds remotely interesting right now? 🤔`];
+                    const boredNormal = [ `Just feeling kinda bored? 🥱 Let's shake things up! Wanna hear a joke or talk about ${pickRandom(memory.userPreferences.mentionedHobbies) || 'something random'}?`, `Got that 'nothing to do' vibe? I feel ya. What would be the *opposite* of boring right now?`];
+                    const angryHigh = [ `Oof, feeling *really* angry/frustrated sounds intense. 😠 Take a deep breath. What happened to trigger that?`, `Whoa, sounds like you're boiling! 😤 Sometimes venting helps release steam. Let it out, ${userNameFormatted}.`];
+                    const angryNormal = [ `Urgh, anger/frustration is no fun. 😠 Wanna talk through what's bugging you?`, `Sounds like something got under your skin. Need to vent or want a distraction?`];
+                    const offerJokeAdditions = [ " \n\n... Hey, if you need a *tiny* distraction, I've got some cheesy jokes ready? 😄 No pressure though!", " \n\n... Totally unrelated, but wanna hear something silly to maybe lighten the mood a sec? 😂"];
 
-                    // Offer a joke occasionally (maybe vary the prompt slightly?)
-                    if (Math.random() < 0.35 && state.lastBotAction !== 'toldJoke' && state.lastBotAction !== 'offeredJoke' && (feeling === 'sad' || feeling === 'bored' || feeling === 'angry')) {
-                        response += pickRandom([
-                            " \n\n... Hey, if you need a *tiny* distraction, I've got some cheesy jokes ready? 😄 No pressure though!", // Softer offer
-                            " \n\n... Totally unrelated, but wanna hear something silly to maybe lighten the mood a sec? 😂" // Different offer phrasing
-                        ]);
-                        state.offeredJoke = true;
-                        potentialAction = 'offeredJoke'; // Ensure this overrides acknowledgedFeeling if joke is offered
-                    }
-                    useFallback = false; // Feeling was handled
 
-                } // --- Handling Generic "I feel..." ---
-                else if (lower.includes("i feel")) {
-                    response = pickRandom([
-                        `Okay, ${userNameFormatted}, talk to me about that feeling. What's it like? 🤔`, // More open
-                        "Feelings can be complicated beasts! What's leading to this one?", // Acknowledge complexity
-                        `Gotcha. Can you put a name to that feeling, ${userNameFormatted}? Or just describe it?`, // Different prompt
-                        `Hmm, "feel" is a big word! What's going on inside, ${userNameFormatted}?` // More probing
-                    ]);
-                    potentialAction = 'askedQuestion';
-                    useFallback = false;
-                } // --- Handling "because..." ---
-                else if (lower.startsWith("because")) {
-                    response = pickRandom([
-                        "Ah, okay, that sheds some light on it. 👍 Thanks for explaining.", // More complete acknowledgement
-                        "Got it, that connection makes sense now.", // Different phrasing
-                        "Okay, hearing the 'why' helps me understand better. ✅", // Focus on understanding
-                        `Understood. Thanks for sharing the reason, ${userNameFormatted}.`
-                    ]);
-                    potentialAction = 'acknowledged';
-                    useFallback = false;
-                } // --- Handling Family Mentions ---
-                else if (lower.includes("mother") || lower.includes("father") || lower.includes("mom") || lower.includes("dad") || lower.includes("sister") || lower.includes("brother") || lower.includes("family")) {
-                    response = pickRandom([
-                        `Ah, family talk, ${userNameFormatted}. What's on your mind about them? 🤔`, // Keep one simple
-                        "Family dynamics can be... a *lot*, right? 😄 Anything specific happening?", // More relatable
-                        `Talking about family? Okay, ${userNameFormatted}. How are things on that front?`, // Slightly warmer
-                        `Family stuff can bring up all sorts of feelings. What's going on, ${userNameFormatted}?` // Acknowledge feelings link
-                    ]);
-                    potentialAction = 'askedQuestion';
-                    useFallback = false;
-                }
-            } // End of Section 6 logic block
+                     switch (feeling) {
+                         case 'sad': baseFeelingResponses = feelingIntensity === 'high' ? sadHigh : (feelingIntensity === 'low' ? sadLow : sadNormal); break;
+                         case 'happy': baseFeelingResponses = feelingIntensity === 'high' ? happyHigh : happyNormal; break;
+                         case 'bored': baseFeelingResponses = feelingIntensity === 'high' ? boredHigh : boredNormal; break;
+                         case 'angry': baseFeelingResponses = feelingIntensity === 'high' ? angryHigh : angryNormal; break;
+                     }
+                     response = pickRandom(baseFeelingResponses);
 
-           // 7. Handle Questions from User (UPDATED with more variations)
-           if (useFallback && lower.endsWith("?")) {
-                 potentialAction = 'askedQuestion';
-                 const userNameFormatted = memory.userName ? `**${memory.userName}**` : 'friend'; // Helper for name formatting
+                     if (Math.random() < 0.3 && state.lastBotAction !== 'toldJoke' && state.lastBotAction !== 'offeredJoke' && (feeling === 'sad' || feeling === 'bored' || feeling === 'angry')) {
+                         response += pickRandom(offerJokeAdditions);
+                         state.offeredJoke = true;
+                         potentialAction = 'offeredJoke'; // Override
+                     }
+                     useFallback = false;
 
-                 // Check if it looks like a Yes/No question
-                 if (lower.match(/^(is|are|was|were|do|does|did|can|could|should|would|will|have|has|am|is it|do you)\b/)) {
-                     response = pickRandom([
-                         `Good question, ${userNameFormatted}! What do *you* think first, though? 🤔`,
-                         "Possibly! 😄 Depends on the situation, right? What made you ask?", // New variation
-                         `Hmm, that depends... what's your take, ${userNameFormatted}?`,
-                         `Could be! What's your gut feeling on that, ${userNameFormatted}? 🤔`, // New variation
-                         `Why do you ask, ${userNameFormatted}? Curious about your thoughts first! 😉` // New variation
-                     ]);
-                 } else { // Open-ended question
-                     response = pickRandom([
-                         `Ooh, interesting question, ${userNameFormatted}! What sparked that? ✨`,
-                         `Hmm, what are *your* initial thoughts on that, ${userNameFormatted}?`, // Emphasized 'your'
-                         `Love that question, ${userNameFormatted}! 😄 What angle are you looking at it from?`, // New variation
-                         `That's got me thinking! 🤔 What are your ideas on it, ${userNameFormatted}?`, // New variation
-                         `Hmm, let's unpack that! What led you to ask, ${userNameFormatted}? 💡` // New variation
-                     ]);
                  }
-                 useFallback = false;
+                 else if (lower.includes("i feel") && !feeling) {
+                     const feelPrompts = [ `Okay, ${userNameFormatted}, talk to me about that feeling. What's it like? 🤔`, "Feelings can be complicated beasts! What's leading to this one?", `Gotcha. Can you put a name to that feeling, ${userNameFormatted}? Or just describe it?`, `Hmm, "feel" is a big word! What's going on inside, ${userNameFormatted}?`];
+                     response = pickRandom(feelPrompts);
+                     potentialAction = 'askedQuestion';
+                     useFallback = false;
+                 } else if (lower.startsWith("because")) {
+                    const becauseAcks = ["Ah, okay, that sheds some light on it. 👍 Thanks for explaining.", "Got it, that connection makes sense now.", "Okay, hearing the 'why' helps me understand better. ✅", `Understood. Thanks for sharing the reason, ${userNameFormatted}.`];
+                     response = pickRandom(becauseAcks);
+                     potentialAction = 'acknowledged';
+                     useFallback = false;
+                 } else if (lower.match(/\b(mother|father|mom|dad|sister|brother|family)\b/)) {
+                     const familyPrompts = [ `Ah, family talk, ${userNameFormatted}. What's on your mind about them? 🤔`, "Family dynamics can be... a *lot*, right? 😄 Anything specific happening?", `Talking about family? Okay, ${userNameFormatted}. How are things on that front?`, `Family stuff can bring up all sorts of feelings. What's going on, ${userNameFormatted}?`];
+                     response = pickRandom(familyPrompts);
+                     potentialAction = 'askedQuestion';
+                     useFallback = false;
+                 }
             }
 
+            // 9. Handle Questions from User
+            if (useFallback && lower.endsWith("?")) {
+                 if (lower.match(/what are you|are you an ai|are you a bot|are you human/)) {
+                     const deflectNature = [ `Me? I'm just **Qutie**! Here to chat and help out. 😊 What's on your mind?`, `Think of me as your chat buddy! 😉 What can I help you with?`, `Does it matter? Let's just talk! 😄`];
+                     response = pickRandom(deflectNature);
+                     potentialAction = 'deflectedQuery';
+                     useFallback = false;
+                 } else {
+                    potentialAction = 'askedQuestion';
+                    const deflectPersonal = [ `Good question, ${userNameFormatted}! 🤔 What are *your* thoughts on that first?`, `Haha, interesting you ask! What makes you curious about that? 😉`, `Hmm, instead of focusing on me, tell me what *you* think about it!` ];
+                    const deflectYesNo = [ `Good question, ${userNameFormatted}! What do *you* think first, though? 🤔`, "Possibly! 😄 Depends on the situation, right? What made you ask?", `Hmm, that depends... what's your take, ${userNameFormatted}?`, `Could be! What's your gut feeling on that, ${userNameFormatted}? 🤔`, `Why do you ask, ${userNameFormatted}? Curious about your thoughts first! 😉`];
+                    const deflectOpen = [ `Ooh, interesting question, ${userNameFormatted}! What sparked that? ✨`, `Hmm, what are *your* initial thoughts on that, ${userNameFormatted}?`, `Love that question, ${userNameFormatted}! 😄 What angle are you looking at it from?`, `That's got me thinking! 🤔 What are your ideas on it, ${userNameFormatted}?`, `Hmm, let's unpack that! What led you to ask, ${userNameFormatted}? 💡`];
 
-            // 8. Contextual Follow-up & Generic Fallback (UPDATED with more variations)
+                     if (lower.match(/^(what's your favorite|do you like|tell me about your)/)) {
+                        response = pickRandom(deflectPersonal);
+                     } else if (lower.match(/^(is|are|was|were|do|does|did|can|could|should|would|will|have|has|am|is it|do you)\b/)) {
+                        response = pickRandom(deflectYesNo);
+                     } else {
+                        response = pickRandom(deflectOpen);
+                     }
+                     useFallback = false;
+                 }
+            }
+
+            // 10. Contextual Follow-up & Generic Fallback
             if (useFallback) {
                 let contextualFallback = null;
-                // Check if recent interaction and if context exists
-                if (Date.now() - memory.lastInteractionTime < 45000) { // Shorter threshold for direct follow-up
-                    if (memory.lastTopicKeyword && Math.random() < 0.4) { // Follow up on topic?
-                        contextualFallback = pickRandom([
-                            `You mentioned **${memory.lastTopicKeyword}** earlier... still on your mind? 🤔`, // New phrasing
-                            `Was just thinking about **${memory.lastTopicKeyword}** again. Any other thoughts pop up? ✨`, // New
-                            `Circling back to **${memory.lastTopicKeyword}**... did anything else occur to you?`, // New phrasing
-                            `Anything more to add about **${memory.lastTopicKeyword}**? Or shall we move on? 😊` // New
-                        ]);
-                        memory.lastTopicKeyword = null; // Use the context once
-                    } else if (memory.lastFeeling && Math.random() < 0.4) { // Follow up on feeling?
-                        contextualFallback = pickRandom([
-                             `Just checking in about feeling **${memory.lastFeeling}**. How are things now? ❤️`, // New phrasing
-                             `Remember you mentioned feeling **${memory.lastFeeling}**? Hope you're doing a bit better. ✨`, // New
-                             `Wanted to see if that **${memory.lastFeeling}** feeling has shifted at all? 🤔`, // New phrasing
-                             `Thinking of you! How's the "**${memory.lastFeeling}**" situation going?` // New
-                        ]);
-                        memory.lastFeeling = null; // Use the context once
-                    }
-                }
+                const followUpTopicBot = [ `You mentioned **{TOPIC}** earlier... still on your mind? 🤔`, `Was just thinking about **{TOPIC}** again. Any other thoughts pop up? ✨`, `Circling back to **{TOPIC}**... did anything else occur to you?`, `Anything more to add about **{TOPIC}**? Or shall we move on? 😊`];
+                const followUpTopicUser = [ `You mentioned **{TOPIC}** earlier. Anything more on that? 🤔`, `Still thinking about **{TOPIC}**? Just curious! ✨`];
+                const followUpFeeling = [ `Just checking in about feeling **{FEELING}**. How are things now? ❤️`, `Remember you mentioned feeling **{FEELING}**? Hope you're doing a bit better. ✨`, `Wanted to see if that **{FEELING}** feeling has shifted at all? 🤔`, `Thinking of you! How's the "**{FEELING}**" situation going?`];
 
-                if (contextualFallback) {
-                    // Use the contextual follow-up response
-                    response = contextualFallback;
-                    potentialAction = 'askedContextualQuestion';
-                } else {
-                    // --- Generic Fallback Logic --- (Using updated list)
-                     const fallbacks = [
-                         "Interesting point! Tell me *more*. 🤔",
-                         "Okay, go on... 👍",
-                         "What else comes to mind about that?",
-                         "Hmm, intriguing. Could you elaborate a bit? ✨", // Tweaked phrasing
-                         "And how did that play out?",
-                         "Right, right. And then...?", // Added emphasis
-                         "Fascinating! Keep going. 😮", // Added emoji
-                         "Gotcha. What's the next part?",
-                         "Okay, processing that... ⚙️", // Changed emoji
-                         "Wow, really? Definitely tell me more! 😲", // Tweaked phrasing
-                         "That's something to think about for sure. 🤔", // Tweaked phrasing
-                         "Alright, what else connects to this? 🔗", // New phrasing
-                         "Makes sense from that angle. 👍", // Tweaked phrasing
-                         "Cool, cool. 😎",
-                         "Ah, I see. 👀", // New
-                         "Noted! ✅", // New
-                         "Okay, I'm following... what else? 👇", // New
-                         "Hmm, makes me wonder... anything else? 🤔" // New
-                     ];
-                    response = pickRandom(fallbacks);
-                    potentialAction = 'gaveFallback';
+                 if (Date.now() - memory.lastInteractionTime < shortInteractionThreshold) {
+                     if (memory.lastTopicKeyword && Math.random() < 0.35) {
+                         contextualFallback = pickRandom(followUpTopicBot).replace('{TOPIC}', memory.lastTopicKeyword);
+                         memory.lastTopicKeyword = null;
+                     } else if (memory.lastUserTopicKeyword && memory.lastUserTopicKeyword !== memory.lastTopicKeyword && Math.random() < 0.3) {
+                         contextualFallback = pickRandom(followUpTopicUser).replace('{TOPIC}', memory.lastUserTopicKeyword);
+                     } else if (memory.lastFeeling && Math.random() < 0.35) {
+                        contextualFallback = pickRandom(followUpFeeling).replace('{FEELING}', memory.lastFeeling);
+                        memory.lastFeeling = null;
+                     }
+                 }
 
-                    // Occasionally add user's name (No change needed here)
-                    if (memory.userName && Math.random() < 0.25) {
-                        response += `, ${memory.userName}?`; // Note: Markdown **${memory.userName}** isn't used here, but could be added if desired
+                 if (contextualFallback) {
+                     response = contextualFallback;
+                     potentialAction = 'askedContextualQuestion';
+                 } else {
+                     const fallbacks = [ "Interesting point! Tell me *more*. 🤔", "Okay, go on... 👍", "What else comes to mind about that?", "Hmm, intriguing. Could you elaborate a bit? ✨", "And how did that play out?", "Right, right. And then...?", "Fascinating! Keep going. 😮", "Gotcha. What's the next part?", "Okay, processing that... ⚙️", "Wow, really? Definitely tell me more! 😲", "That's something to think about for sure. 🤔", "Alright, what else connects to this? 🔗", "Makes sense from that angle. 👍", "Cool, cool. 😎", "Ah, I see. 👀", "Noted! ✅", "Okay, I'm following... what else? 👇", "Hmm, makes me wonder... anything else? 🤔"];
+                     response = pickRandom(fallbacks);
+                     potentialAction = 'gaveFallback';
+
+                     if (memory.userName && Math.random() < 0.2) {
+                        response += `, **${memory.userName}**?`;
                      }
 
-                    // Occasionally try to shift topic (No change needed here)
-                    if (Math.random() < 0.15) {
-                        response += " \n\n... " + pickRandom(topicStarters);
-                        potentialAction = 'shiftedTopic';
-                    }
-                }
-            } // End of Section 8 logic block
+                     if (Math.random() < 0.15) {
+                         let topic = pickRandom(topicStarters);
+                         if (memory.userPreferences.mentionedHobbies.length > 0 && Math.random() < 0.5) {
+                             topic = `Speaking of other things, how's the **${pickRandom(memory.userPreferences.mentionedHobbies)}** going lately?`;
+                         }
+                         response += " \n\n... " + topic;
+                         potentialAction = 'shiftedTopic';
+                     }
+                 }
+            }
 
-            // --- Final Step: Store Action & Update lastUserMessage ---
-            memory.lastUserMessage = lower; // Update last message AFTER processing is done (and not exited early by repetition)
+            // --- Final Step: Update State & Memory ---
+            memory.lastUserMessage = lower;
+            memory.lastInteractionTime = Date.now();
             state.lastBotAction = potentialAction;
-            // console.log(`Bot Action: ${potentialAction}`);
-            return response;
 
+            // console.log(`Bot Action: ${potentialAction}, User Topic: ${memory.lastUserTopicKeyword}, Bot Topic: ${memory.lastTopicKeyword}, Feeling: ${memory.lastFeeling}`);
+             return response;
         }
         // --- End getBotResponse ---
 
-        // --- handleSend (Main interaction function) ---
-        function handleSend() {
-             const userMessage = userInput.value.trim();
-             if (userMessage) {
-                 addMessage(userMessage, 'user');
-                 userInput.value = '';
-                 suggestionsArea.innerHTML = ''; // Clear suggestions
-                 typingIndicator.style.display = 'block';
-                 chatlog.scrollTop = chatlog.scrollHeight;
+        // --- handleSend (Main interaction - UPDATED for ASYNC) ---
+        async function handleSend() { // Make handleSend async
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                addMessage(userMessage, 'user');
+                const userKeywords = []; // Extract keywords for suggestions
+                Object.keys(opinions).forEach(key => { if (userMessage.toLowerCase().includes(key)) userKeywords.push(key); });
 
-                 // Simulate bot thinking time
-                 const botThinkTime = 500 + Math.random() * 700;
+                userInput.value = '';
+                suggestionsArea.innerHTML = ''; // Clear suggestions immediately
+                typingIndicator.style.display = 'block';
+                requestAnimationFrame(() => {
+                    chatlog.scrollTo({ top: chatlog.scrollHeight, behavior: 'smooth' });
+                 });
 
-                 setTimeout(() => {
+                const botThinkTime = 500 + Math.random() * 700;
+                await new Promise(resolve => setTimeout(resolve, botThinkTime)); // Wait
+
+                try {
+                     const botMessage = await getBotResponse(userMessage); // Await the response
                      typingIndicator.style.display = 'none';
-                     const botMessage = getBotResponse(userMessage); // Get response (potentially modified by new logic)
                      addMessage(botMessage, 'bot');
-
-                     // Update suggestions based on the context of the bot's last action
-                     updateSuggestions(state.lastBotAction);
-
-                 }, botThinkTime);
+                     updateSuggestions(state.lastBotAction, userKeywords); // Update suggestions
+                } catch (error) {
+                     console.error("Error getting bot response:", error);
+                     typingIndicator.style.display = 'none';
+                     addMessage("Whoops! I seem to have tangled my circuits a bit. 😅 Could you try that again?", 'bot');
+                     updateSuggestions('generic'); // Generic suggestions on error
+                 }
              }
-         }
+        }
 
         // --- Event Listeners ---
-        sendButton.addEventListener('click', handleSend);
+        sendButton.addEventListener('click', handleSend); // Calls async
 
         userInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
-                handleSend();
                 event.preventDefault();
+                handleSend(); // Calls async
             }
         });
 
@@ -1266,45 +1380,44 @@
             if (event.target.tagName === 'BUTTON' && event.target.classList.contains('suggestion-button')) {
                 userInput.value = event.target.textContent;
                 userInput.focus();
-                 handleSend(); // Send immediately after clicking suggestion
+                handleSend(); // Calls async
             }
         });
 
         themeToggleButton.addEventListener('click', toggleTheme);
 
-        // --- Initial Load ---
+        // --- Initial Load (UPDATED Greeting Logic) ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadMemory(); // Load name AND THEME
+            loadMemory(); // Load name, theme, AND preferences
 
-            // Initial greeting with more variations
             setTimeout(() => {
                 if (chatlog.children.length === 0) {
-                    const greeting = memory.userName
-                        ? pickRandom([
-                            `Welcome back, **${memory.userName}**! 😄`,
-                            `Hey **${memory.userName}**! Good to see you again! 👋`,
-                            `Look who's back! Hi **${memory.userName}**! ✨ What's been happening?`, // New
-                            `**${memory.userName}**! You're here! 😄 What are we chatting about today?`, // New
-                            `Hey again, **${memory.userName}**! Ready for round two? 😉`, // New
-                            `Just the person I wanted to see! Hey **${memory.userName}**! 😊` // New
-                          ])
-                        : pickRandom([
-                            "Hey! 😊 Ready to chat?",
-                            "Hello there! What's new?",
-                            "Hi! I'm **Qutie**! What's up?",
-                            "Hey there, new friend! I'm **Qutie**! 😊 Let's talk!", // New
-                            "Greetings! 👋 I'm **Qutie**. What's on your mind? 🤔", // New
-                            "Well hello! ✨ Ready to dive into a chat? I'm **Qutie**!", // New
-                            "Hi! Welcome! 😊 I'm **Qutie**, your friendly chat buddy! What's up?", // New
-                            "You've reached **Qutie**! 🤖 ... Just kidding! 😉 Ready to chat?" // New
-                          ]);
+                    let greeting = "";
+                    if (memory.userName) {
+                         let baseGreetings = [
+                             `Welcome back, **${memory.userName}**! 😄`,
+                             `Hey **${memory.userName}**! Good to see you again! 👋`,
+                             `Look who's back! Hi **${memory.userName}**! ✨`,
+                             `**${memory.userName}**! You're here! 😄`,
+                             `Hey again, **${memory.userName}**! Ready for round two? 😉`,
+                         ];
+                         if (memory.userPreferences.mentionedHobbies.length > 0 && Math.random() < 0.4) {
+                            baseGreetings.push(`Hey **${memory.userName}**! Been up to any **${pickRandom(memory.userPreferences.mentionedHobbies)}** lately? 🤔`);
+                         }
+                          if (memory.userPreferences.favoriteColor && Math.random() < 0.3) {
+                             baseGreetings.push(`**${memory.userName}**! Hope your day is as awesome as the color ${memory.userPreferences.favoriteColor}! ✨`);
+                         }
+                         greeting = pickRandom(baseGreetings);
+                    } else {
+                         const newUserGreetings = [ "Hey! 😊 Ready to chat?", "Hello there! What's new?", "Hi! I'm **Qutie**! What's up?", "Hey there, new friend! I'm **Qutie**! 😊 Let's talk!", "Greetings! 👋 I'm **Qutie**. What's on your mind? 🤔", "Well hello! ✨ Ready to dive into a chat? I'm **Qutie**!", "Hi! Welcome! 😊 I'm **Qutie**, your friendly chat buddy! What's up?", "You've reached **Qutie**! 🤖 ... Just kidding! 😉 Ready to chat?"];
+                         greeting = pickRandom(newUserGreetings);
+                    }
                     addMessage(greeting, 'bot');
                     state.lastBotAction = 'greeted';
                     updateSuggestions('greeted');
                 }
-            }, 600); // Slightly longer delay after DOM content loaded
+            }, 600);
         });
-
     </script>
-</body>
+     </body>
 </html>
