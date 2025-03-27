@@ -26,6 +26,24 @@
             --tagline-color-dark: rgba(255, 255, 255, 0.7);
             --tagline-shadow-dark: rgba(255, 255, 255, 0.6);
             --attribution-color-dark: rgba(255, 255, 255, 0.5);
+
+            /* Light Theme */
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --border-color-light: #555;
+            --shadow-color-light: rgba(0, 0, 0, 0.2);
+            --glow-color-light: rgba(0, 0, 0, 0.1);
+            --highlight-bg-light: rgba(0, 0, 0, 0.05);
+            --highlight-bg-hover-light: rgba(0, 0, 0, 0.1);
+            --progress-bg-light: rgba(0, 0, 0, 0.1);
+            --progress-fill-light: linear-gradient(90deg, rgba(0, 0, 0, 0.4), #333);
+            --wheel-border-light: rgba(0, 0, 0, 0.2);
+            --wheel-shadow-light: rgba(0, 0, 0, 0.1);
+            --dot-color-light: #333;
+            --dot-shadow-light: rgba(0, 0, 0, 0.3);
+            --tagline-color-light: rgba(0, 0, 0, 0.6);
+            --tagline-shadow-light: rgba(0, 0, 0, 0.1);
+            --attribution-color-light: rgba(0, 0, 0, 0.5);
             
             /* Default to dark theme */
             --bg-color: var(--bg-color-dark);
@@ -47,6 +65,28 @@
             
             --text-shadow: 0px 0px 10px var(--glow-color);
             --box-shadow: 0px 0px 15px var(--shadow-color);
+        }
+
+        body.light-theme {
+            --bg-color: var(--bg-color-light);
+            --text-color: var(--text-color-light);
+            --border-color: var(--border-color-light);
+            --shadow-color: var(--shadow-color-light);
+            --glow-color: transparent; /* Remove glow in light theme */
+            --highlight-bg: var(--highlight-bg-light);
+            --highlight-bg-hover: var(--highlight-bg-hover-light);
+            /* Adjust shadows for light theme */
+            --text-shadow: 0px 0px 5px var(--shadow-color-light); 
+            --box-shadow: 0px 0px 10px var(--shadow-color-light);
+            --progress-bg: var(--progress-bg-light);
+            --progress-fill: var(--progress-fill-light);
+            --wheel-border: var(--wheel-border-light);
+            --wheel-shadow: var(--wheel-shadow-light);
+            --dot-color: var(--dot-color-light);
+            --dot-shadow: var(--dot-shadow-light);
+            --tagline-color: var(--tagline-color-light);
+            --tagline-shadow: var(--tagline-shadow-light);
+            --attribution-color: var(--attribution-color-light);
         }
 
         body {
@@ -340,6 +380,11 @@
             pointer-events: none; /* Allow clicks to pass through */
         }
 
+        .light-theme .selector-dot {
+            background: var(--text-color-light); /* Black dot in light theme */
+            box-shadow: 0 0 20px var(--shadow-color-light); /* Light theme shadow */
+        }
+
         @keyframes pageTransition {
             0% { opacity: 1; transform: scale(1); }
             50% { opacity: 0; transform: scale(1.2); }
@@ -401,6 +446,7 @@
     </style>
 </head>
 <body>
+    <div id="theme-toggle">🌙</div>
     
     <div id="container">
         <div id="title" class="typing-effect">TruFit by Qtac</div>
@@ -483,6 +529,7 @@
         const wheel = document.querySelector('.wheel');
         const appItems = document.querySelectorAll('.app-item');
         const formatBtns = document.querySelectorAll('.format-btn');
+        const themeToggle = document.getElementById('theme-toggle');
         
         // App state
         let timeFormat = localStorage.getItem('timeFormat') || '24h';
@@ -491,6 +538,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Apply saved theme
+            applyTheme(currentTheme);
             
             // Apply saved time format
             formatBtns.forEach(btn => {
@@ -537,7 +585,7 @@
                 }
                 selectorDot.style.transform = 'translate(-50%, -50%)';
             }
-            positionSelectorDot(document.querySelector('.app-item.active') || null);
+            positionSelectorDot(document.querySelector('.app-item.active')); // Position dot at initially active item
             
             // App selection
             appItems.forEach(item => {
@@ -548,27 +596,61 @@
                 });
                 item.addEventListener('click', function(event) {
                     const app = this.dataset.app;
-                    if (app !== '#') {
+                    if (app === '#') {
+                        location.reload(); // Refresh the page
+                    } else if (app) {
                         window.open(app, "_self");
                     }
                 });
             });
 
-        // Position the selector dot in the center initially
-        positionSelectorDot(null);
+            // Mouse inactivity timeout for selector dot
+            let mouseMoveTimeout;
+            document.addEventListener('mousemove', () => {
+                clearTimeout(mouseMoveTimeout);
+                // Keep the dot on the hovered item while moving
+                const hoveredItem = document.querySelector('.app-item:hover');
+                if (hoveredItem) {
+                    positionSelectorDot(hoveredItem);
+                }
+                mouseMoveTimeout = setTimeout(() => {
+                    // After 3 seconds of inactivity, move dot to center and remove active class
+                    positionSelectorDot(null); 
+                    appItems.forEach(i => i.classList.remove('active'));
+                    // Ensure the default item (e.g., the first one) becomes active again visually if needed
+                    // document.querySelector('.app-item[data-app="todo.html"]').classList.add('active'); // Optional: reset to default
+                }, 3000); // 3 seconds
+            });
 
-        let timeout;
+            // Theme toggle listener
+            themeToggle.addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                localStorage.setItem('theme', currentTheme);
+            });
 
-        document.addEventListener('mousemove', () => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                positionSelectorDot(null);
-                appItems.forEach(i => i.classList.remove('active'));
-            }, 3000); // 3 seconds
+            // Time format listener
+            formatBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    timeFormat = this.dataset.format;
+                    localStorage.setItem('timeFormat', timeFormat);
+                    formatBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateClock(); // Update clock immediately on format change
+                });
+            });
         });
-});
         
-        // Apply theme
+        // Apply theme function
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                themeToggle.textContent = '☀️';
+            } else {
+                document.body.classList.remove('light-theme');
+                themeToggle.textContent = '🌙';
+            }
+        }
 
         // Update clock
         function updateClock() {
@@ -646,17 +728,61 @@
             wheel.style.transform = `rotate(${currentRotation}deg)`;
             
             // Counter-rotate app items to keep them upright
-            appItems.forEach(item => {
-                item.style.transform = `rotate(${-currentRotation}deg)`;
+            // Calculate the correct transform based on the item's original position and the wheel rotation
+            const numItems = appItems.length;
+            const angleIncrement = 360 / numItems;
+            appItems.forEach((item, index) => {
+                const itemAngle = index * angleIncrement;
+                // Reset transform origin for rotation
+                item.style.transformOrigin = 'center center'; 
+                // Apply the counter-rotation relative to its position
+                // The transforms for positioning need to be reapplied along with the rotation
+                let baseTransform = '';
+                 if (index === 0) baseTransform = 'translateX(-50%) translateY(-50%)';
+                 else if (index === 1) baseTransform = 'translateX(50%) translateY(-50%)';
+                 else if (index === 2) baseTransform = 'translateX(-50%) translateY(50%)';
+                 else if (index === 3) baseTransform = 'translateX(-50%) translateY(-50%)';
+
+                // Combine base transform with counter-rotation
+                // Note: This part is tricky and might need adjustment based on exact CSS positioning.
+                // A simpler approach might be to adjust the initial CSS positioning to use rotate() as well.
+                // For now, let's just apply counter-rotation. Revisit if positioning breaks.
+                 item.style.transform = `${baseTransform} rotate(${-currentRotation}deg)`;
+
+                 // Reapply hover/active scale if needed
+                 if (item.matches(':hover') || item.classList.contains('active')) {
+                     item.style.transform += ' scale(1.1)';
+                 }
             });
         }
         
         // Add keyboard navigation
         document.addEventListener('keydown', function(e) {
+            const activeIndex = Array.from(appItems).findIndex(item => item.classList.contains('active'));
+            let nextIndex = activeIndex;
+
             if (e.key === 'ArrowRight') {
-                rotateWheel(-90);
+                rotateWheel(-90); // Rotate wheel visually
+                nextIndex = (activeIndex + 1) % appItems.length;
             } else if (e.key === 'ArrowLeft') {
-                rotateWheel(90);
+                rotateWheel(90); // Rotate wheel visually
+                nextIndex = (activeIndex - 1 + appItems.length) % appItems.length;
+            } else if (e.key === 'Enter') {
+                 const activeItem = appItems[activeIndex];
+                 if (activeItem) {
+                     activeItem.click(); // Trigger click on the active item
+                 }
+                 return; // Prevent further processing for Enter key
+            } else {
+                return; // Ignore other keys
+            }
+
+            // Update active item based on keyboard navigation
+            appItems.forEach(item => item.classList.remove('active'));
+            const nextItem = appItems[nextIndex];
+            if (nextItem) {
+                 nextItem.classList.add('active');
+                 positionSelectorDot(nextItem); // Move dot to the new active item
             }
         });
     </script>

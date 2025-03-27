@@ -3,21 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7-Minute Workout</title>
+    <title>Daily Burn</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
         :root {
-            --text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.9);
-            --box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
-            --glow-color: rgba(255, 255, 255, 0.9);
+            /* Dark Theme */
+            --bg-color-dark: #000;
+            --text-color-dark: #fff;
+            --border-color-dark: #fff;
+            --shadow-color-dark: rgba(255, 255, 255, 0.5);
+            --glow-color-dark: rgba(255, 255, 255, 0.9);
+            --highlight-bg-dark: rgba(255, 255, 255, 0.1);
+            --highlight-bg-hover-dark: rgba(255, 255, 255, 0.3);
+            --progress-bg-dark: rgba(255, 255, 255, 0.1);
+            --progress-fill-dark: white;
+            --tagline-color-dark: rgba(255, 255, 255, 0.7);
+            --tagline-shadow-dark: rgba(255, 255, 255, 0.6);
+            --attribution-color-dark: rgba(255, 255, 255, 0.5);
+            --home-btn-color-dark: rgba(255, 255, 255, 0.7);
+            --home-btn-hover-color-dark: white;
+            --home-btn-shadow-dark: white;
+            --streak-day-border-dark: white;
+            --streak-day-shadow-dark: rgba(255, 255, 255, 0.3);
+            --streak-day-completed-bg-dark: white;
+            --streak-day-completed-shadow-dark: rgba(255, 255, 255, 0.8);
+            --select-bg-dark: rgba(255, 255, 255, 0.1);
+            --select-border-dark: white;
+            --select-text-dark: white;
+            --option-bg-dark: #333; /* Added */
+            --option-text-dark: white; /* Added */
+
+            /* Light Theme */
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --border-color-light: #555;
+            --shadow-color-light: rgba(0, 0, 0, 0.2);
+            --glow-color-light: transparent; /* Remove glow in light theme */
+            --highlight-bg-light: rgba(0, 0, 0, 0.05);
+            --highlight-bg-hover-light: rgba(0, 0, 0, 0.1);
+            --progress-bg-light: rgba(0, 0, 0, 0.1);
+            --progress-fill-light: #333;
+            --tagline-color-light: rgba(0, 0, 0, 0.6);
+            --tagline-shadow-light: rgba(0, 0, 0, 0.1);
+            --attribution-color-light: rgba(0, 0, 0, 0.5);
+            --home-btn-color-light: rgba(0, 0, 0, 0.6);
+            --home-btn-hover-color-light: #333;
+            --home-btn-shadow-light: #333;
+            --streak-day-border-light: #555;
+            --streak-day-shadow-light: rgba(0, 0, 0, 0.1);
+            --streak-day-completed-bg-light: #555;
+            --streak-day-completed-shadow-light: rgba(0, 0, 0, 0.3);
+            --select-bg-light: rgba(0, 0, 0, 0.05);
+            --select-border-light: #555;
+            --select-text-light: #333;
+            --option-bg-light: white; /* Added */
+            --option-text-light: #333; /* Added */
+
+
+            /* Default to dark theme */
+            --bg-color: var(--bg-color-dark);
+            --text-color: var(--text-color-dark);
+            --border-color: var(--border-color-dark);
+            --shadow-color: var(--shadow-color-dark);
+            --glow-color: var(--glow-color-dark);
+            --highlight-bg: var(--highlight-bg-dark);
+            --highlight-bg-hover: var(--highlight-bg-hover-dark);
+            --progress-bg: var(--progress-bg-dark);
+            --progress-fill: var(--progress-fill-dark);
+            --tagline-color: var(--tagline-color-dark);
+            --tagline-shadow: var(--tagline-shadow-dark);
+            --attribution-color: var(--attribution-color-dark);
+            --home-btn-color: var(--home-btn-color-dark);
+            --home-btn-hover-color: var(--home-btn-hover-color-dark);
+            --home-btn-shadow: var(--home-btn-shadow-dark);
+            /* Streak styles removed */
+            --select-bg: var(--select-bg-dark);
+            --select-border: var(--select-border-dark);
+            --select-text: var(--select-text-dark);
+            --option-bg: var(--option-bg-dark); /* Added */
+            --option-text: var(--option-text-dark); /* Added */
+
+            --text-shadow: 0px 0px 10px var(--glow-color);
+            --box-shadow: 0px 0px 15px var(--shadow-color);
+        }
+
+        body.light-theme {
+            --bg-color: var(--bg-color-light);
+            --text-color: var(--text-color-light);
+            --border-color: var(--border-color-light);
+            --shadow-color: var(--shadow-color-light);
+            --glow-color: var(--glow-color-light);
+            --highlight-bg: var(--highlight-bg-light);
+            --highlight-bg-hover: var(--highlight-bg-hover-light);
+            --progress-bg: var(--progress-bg-light);
+            --progress-fill: var(--progress-fill-light);
+            --tagline-color: var(--tagline-color-light);
+            --tagline-shadow: var(--tagline-shadow-light);
+            --attribution-color: var(--attribution-color-light);
+            --home-btn-color: var(--home-btn-color-light);
+            --home-btn-hover-color: var(--home-btn-hover-color-light);
+            --home-btn-shadow: var(--home-btn-shadow-light);
+            /* Streak styles removed */
+            --select-bg: var(--select-bg-light);
+            --select-border: var(--select-border-light);
+            --select-text: var(--select-text-light);
+            --option-bg: var(--option-bg-light); /* Added */
+            --option-text: var(--option-text-light); /* Added */
+
+            /* Adjust shadows for light theme */
+            --text-shadow: 0px 0px 5px var(--shadow-color-light);
+            --box-shadow: 0px 0px 10px var(--shadow-color-light);
         }
 
         body {
             font-family: 'Space Mono', monospace;
-            background: #000;
-            color: #fff;
+            background: var(--bg-color);
+            color: var(--text-color);
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -25,14 +128,14 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            transition: background 1s ease;
+            transition: background 1s ease, color 1s ease; /* Added color transition */
             position: relative;
             overflow-x: hidden;
             padding: 20px;
         }
 
         #container {
-            border: 2px solid white;
+            border: 2px solid var(--border-color);
             padding: 30px;
             border-radius: 15px;
             box-shadow: var(--box-shadow);
@@ -47,6 +150,7 @@
             opacity: 0;
             transform: translateY(20px);
             animation: fadeIn 1s forwards 0.5s;
+            transition: border-color 1s ease, box-shadow 1s ease; /* Added transitions */
         }
 
         @keyframes fadeIn {
@@ -63,7 +167,8 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, transparent, white, transparent);
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+            transition: background 1s ease; /* Added transition */
         }
 
         .typing-effect {
@@ -89,18 +194,45 @@
             text-shadow: var(--text-shadow);
             letter-spacing: 2px;
             margin-bottom: 20px;
+            transition: text-shadow 1s ease; /* Added transition */
+        }
+
+        select {
+            background: var(--select-bg);
+            color: var(--select-text);
+            border: 1px solid var(--select-border);
+            padding: 8px 12px;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 250px;
+            transition: background 1s ease, color 1s ease, border-color 1s ease; /* Added transitions */
+        }
+        
+        select option {
+            background-color: var(--option-bg);
+            color: var(--option-text);
+        }
+
+
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transition: color 1s ease; /* Added transition */
         }
 
         #generate-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 2px solid white;
+            background: var(--highlight-bg);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
             padding: 12px 25px;
             font-size: 1.2rem;
             cursor: pointer;
-            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease-in-out;
+            text-shadow: var(--text-shadow);
+            box-shadow: var(--box-shadow);
+            transition: all 0.2s ease-in-out, background 1s ease, color 1s ease, border-color 1s ease, text-shadow 1s ease, box-shadow 1s ease; /* Added transitions */
             font-family: 'Space Mono', monospace;
             margin-top: 10px;
             margin-bottom: 20px;
@@ -109,8 +241,8 @@
         }
 
         #generate-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+            background: var(--highlight-bg-hover);
+            box-shadow: 0px 0px 20px var(--shadow-color);
         }
 
         #workout-container {
@@ -126,32 +258,39 @@
             font-size: 4rem;
             text-shadow: var(--text-shadow);
             margin: 20px 0;
+            transition: text-shadow 1s ease; /* Added transition */
         }
 
         #exercise-name {
             font-size: 1.5rem;
             margin-bottom: 10px;
             text-shadow: var(--text-shadow);
+            transition: text-shadow 1s ease; /* Added transition */
         }
 
         #exercise-description {
             font-size: 0.9rem;
             margin-bottom: 20px;
             opacity: 0.8;
+            transition: color 1s ease; /* Added transition */
         }
 
         #progress-container {
             width: 100%;
             height: 5px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--progress-bg);
             margin: 20px 0;
+            border-radius: 3px;
+            overflow: hidden;
+            transition: background 1s ease; /* Added transition */
         }
 
         #progress-bar {
             height: 100%;
             width: 0%;
-            background: white;
-            transition: width 0.1s linear;
+            background: var(--progress-fill);
+            transition: width 0.1s linear, background 1s ease; /* Added transition */
+            border-radius: 3px;
         }
 
         .control-buttons {
@@ -161,79 +300,52 @@
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 2px solid white;
+            background: var(--highlight-bg);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
             padding: 8px 15px;
             font-size: 0.9rem;
             cursor: pointer;
-            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease-in-out;
+            text-shadow: var(--text-shadow);
+            box-shadow: var(--box-shadow);
+            transition: all 0.2s ease-in-out, background 1s ease, color 1s ease, border-color 1s ease, text-shadow 1s ease, box-shadow 1s ease; /* Added transitions */
             font-family: 'Space Mono', monospace;
         }
 
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+        .control-btn:hover:not(:disabled) {
+            background: var(--highlight-bg-hover);
+            box-shadow: 0px 0px 20px var(--shadow-color);
         }
 
-        #streak-container {
-            margin-top: 20px;
-            opacity: 0;
-            animation: fadeIn 0.5s forwards 2s;
-        }
-
-        #streak-label {
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        #streak-days {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .streak-day {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            border: 1px solid white;
-            box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.3);
-        }
-
-        .streak-day.completed {
-            background: white;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.8);
-        }
+        /* Streak styles removed */
 
         #home-btn {
             position: absolute;
             bottom: 20px;
             left: 20px;
             font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--home-btn-color);
             cursor: pointer;
-            transition: color 0.2s ease;
+            transition: color 0.2s ease, text-shadow 0.2s ease, color 1s ease; /* Added transition */
             z-index: 2;
             opacity: 0;
             animation: fadeIn 0.5s forwards 2.2s;
         }
 
         #home-btn:hover {
-            color: white;
-            text-shadow: 0 0 5px white;
+            color: var(--home-btn-hover-color);
+            text-shadow: 0 0 5px var(--home-btn-shadow);
         }
 
         #tagline {
             font-size: 0.7rem;
             margin-top: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.6);
+            color: var(--tagline-color);
+            text-shadow: 0px 0px 5px var(--tagline-shadow);
             letter-spacing: 5px;
             opacity: 0;
             animation: fadeIn 0.5s forwards 2.5s;
+            transition: color 1s ease, text-shadow 1s ease; /* Added transitions */
         }
 
         #attribution {
@@ -242,10 +354,29 @@
             width: 100%;
             text-align: center;
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--attribution-color);
             letter-spacing: 1px;
             opacity: 0;
             animation: fadeIn 0.5s forwards 3s;
+            transition: color 1s ease; /* Added transition */
+        }
+
+        /* Theme toggle */
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3s;
+            transition: transform 0.3s ease, color 1s ease; /* Added color transition */
+            color: var(--text-color); /* Ensure toggle matches text color */
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.2);
         }
 
         @keyframes pulse {
@@ -275,22 +406,13 @@
             cursor: default;
         }
 
-        .streak-day.completed {
-            background: white;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.8);
-            animation: streak-complete 0.5s ease-in-out;
-        }
-
-        @keyframes streak-complete {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
+        /* Streak animation removed */
     </style>
 </head>
 <body>
+    <div id="theme-toggle" role="button" aria-label="Toggle Theme" title="Toggle Theme">🌙</div>
     <div id="container">
-        <div id="title" class="typing-effect">7-Minute Workout</div>
+        <div id="title" class="typing-effect">Daily Burn</div>
 
         <label for="difficulty">Difficulty:</label>
         <select id="difficulty">
@@ -323,20 +445,9 @@
             </div>
         </div>
         
-        <div id="streak-container">
-            <div id="streak-label">Current Streak: <span id="streak-count">0</span> days</div>
-            <div id="streak-days">
-                <div class="streak-day" data-day="0"></div>
-                <div class="streak-day" data-day="1"></div>
-                <div class="streak-day" data-day="2"></div>
-                <div class="streak-day" data-day="3"></div>
-                <div class="streak-day" data-day="4"></div>
-                <div class="streak-day" data-day="5"></div>
-                <div class="streak-day" data-day="6"></div>
-            </div>
-        </div>
+        <!-- Streak container removed -->
         
-        <div id="home-btn" onclick="window.location.href='index.html'">🏠</div>
+        <div id="home-btn" role="button" onclick="window.location.href='index.html'" aria-label="Go to Home Page" title="Go to Home Page">🏠</div>
     </div>
 
     <div id="tagline">STRONGER EVERY DAY</div>
@@ -354,8 +465,13 @@
         const pauseBtn = document.getElementById('pause-btn');
         const skipBtn = document.getElementById('skip-btn');
         const stopBtn = document.getElementById('stop-btn');
-        const streakCount = document.getElementById('streak-count');
-        const streakDays = document.querySelectorAll('.streak-day');
+        // Streak elements removed
+        const themeToggle = document.getElementById('theme-toggle');
+        const difficultySelect = document.getElementById('difficulty');
+        const workoutTypeSelect = document.getElementById('workout-type');
+        const difficultyLabel = document.querySelector('label[for="difficulty"]');
+        const workoutTypeLabel = document.querySelector('label[for="workout-type"]');
+
 
         // Workout state
         let currentExerciseIndex = 0;
@@ -364,9 +480,8 @@
         let timeLeft = 0;
         let totalTime = 0;
         let isPaused = false;
-        let streak = 0;
-        let lastWorkoutDate = null;
-        let completedToday = false;
+        // Streak variables removed
+        let currentTheme = localStorage.getItem('theme') || 'dark';
 
         // Exercise database
         const exercises = {
@@ -515,14 +630,40 @@
             });
 
             generateBtn.addEventListener('click', generateWorkout);
-            loadStreakData();
-            updateStreakDisplay();
+            // Streak initialization removed
+
+            // Apply saved theme
+            applyTheme(currentTheme);
+
+            // Theme toggle listener
+            themeToggle.addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                localStorage.setItem('theme', currentTheme);
+            });
         });
 
+        // Apply theme function
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                themeToggle.textContent = '☀️';
+            } else {
+                document.body.classList.remove('light-theme');
+                themeToggle.textContent = '🌙';
+            }
+        }
+
         function generateWorkout() {
-            const difficulty = document.getElementById('difficulty').value;
-            const workoutType = document.getElementById('workout-type').value;
+            const difficulty = difficultySelect.value;
+            const workoutType = workoutTypeSelect.value;
+            // Ensure exercises object has the selected type and difficulty
+            if (!exercises[workoutType] || !exercises[workoutType][difficulty]) {
+                 alert('Selected workout type or difficulty is not available.');
+                 return;
+            }
             const availableExercises = exercises[workoutType][difficulty];
+
 
             if (!availableExercises || availableExercises.length === 0) {
                 alert('No exercises found for the selected difficulty and workout type.');
@@ -534,7 +675,13 @@
                 return availableExercises[randomIndex];
             });
 
+            // Hide selectors and labels
             generateBtn.style.display = "none";
+            difficultySelect.style.display = "none";
+            workoutTypeSelect.style.display = "none";
+            difficultyLabel.style.display = "none";
+            workoutTypeLabel.style.display = "none";
+
             workoutContainer.style.display = "flex";
             currentExerciseIndex = 0;
             startExercise();
@@ -550,6 +697,8 @@
                 updateTimerDisplay();
                 startCountdown(false);
                 workoutContainer.style.display = "flex";
+                // Enable/disable skip button
+                skipBtn.disabled = (currentExerciseIndex === currentWorkout.length - 1);
             } else {
                 stopWorkout();
             }
@@ -563,6 +712,7 @@
         }
 
         function startCountdown(isRest) {
+            clearInterval(timerInterval); // Clear any existing interval
             timerInterval = setInterval(() => {
                 if (!isPaused) {
                     timeLeft--;
@@ -574,17 +724,19 @@
                             exerciseName.textContent = "Rest";
                             exerciseDescription.textContent = "Get ready for the next exercise!";
                             timerElement.classList.add('pulse');
-                            document.body.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                            timeLeft = 10;
+                            // Use CSS variable for rest background
+                            document.body.style.backgroundColor = "var(--highlight-bg)";
+                            timeLeft = 10; // Rest time
                             totalTime = 10;
                             updateTimerDisplay();
-                            startCountdown(true);
+                            startCountdown(true); // Start rest countdown
                         } else {
-                            exerciseName.classList.add('shake');
+                            exerciseName.classList.remove('shake'); // Remove shake from previous exercise
                             timerElement.classList.remove('pulse');
-                            document.body.style.backgroundColor = "#000";
+                            // Use CSS variable for main background
+                            document.body.style.backgroundColor = "var(--bg-color)";
                             currentExerciseIndex++;
-                            startExercise();
+                            startExercise(); // Start next exercise
                         }
                     }
                 }
@@ -593,10 +745,13 @@
 
         function togglePause() {
             isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? "RESUME" : "PAUSE";
         }
 
         function skipExercise() {
             clearInterval(timerInterval);
+            timerElement.classList.remove('pulse'); // Ensure pulse is removed
+            document.body.style.backgroundColor = "var(--bg-color)"; // Reset background
             currentExerciseIndex++;
             startExercise();
         }
@@ -604,127 +759,38 @@
         function stopWorkout() {
             clearInterval(timerInterval);
             workoutContainer.style.display = "none";
+
+            // Show selectors and labels again
+            generateBtn.style.display = "block";
+            difficultySelect.style.display = "block"; // Or "inline-block" if needed
+            workoutTypeSelect.style.display = "block"; // Or "inline-block" if needed
+            difficultyLabel.style.display = "block";
+            workoutTypeLabel.style.display = "block";
+
+            document.body.style.backgroundColor = "var(--bg-color)"; // Reset background
+            timerElement.classList.remove('pulse');
+            exerciseName.classList.remove('shake');
+            isPaused = false; // Reset pause state
+            pauseBtn.textContent = "PAUSE"; // Reset pause button text
+            // completeWorkout call removed
+            // Reset state variables if needed, though generateWorkout handles most of this
             currentExerciseIndex = 0;
+            currentWorkout = [];
             timeLeft = 0;
             totalTime = 0;
-            updateTimerDisplay();
-            isPaused = false;
-            generateBtn.style.display = "block";
-            completeWorkout();
+            updateTimerDisplay(); // Reset timer display
         }
 
-        function isWorkoutCompletedToday() {
-            const today = new Date();
-            const todayDate = today.toDateString();
-            return lastWorkoutDate && lastWorkoutDate.toDateString() === todayDate;
-        }
+        // Streak functions removed (isWorkoutCompletedToday, loadStreakData, updateStreakDisplay, completeWorkout, saveStreakData)
 
-        function loadStreakData() {
-            try {
-                const storedStreak = localStorage.getItem('streak');
-                const storedLastWorkoutDate = localStorage.getItem('lastWorkoutDate');
-                streak = storedStreak ? parseInt(storedStreak) : 0;
-                lastWorkoutDate = storedLastWorkoutDate ? new Date(storedLastWorkoutDate) : null;
-                updateStreakDisplay();
-            } catch (error) {
-                console.error('Error loading streak data from localStorage:', error);
-            }
-        }
-
-        function updateStreakDisplay() {
-            streakCount.textContent = streak;
-            streakDays.forEach((day, index) => {
-                if (index < streak) {
-                    day.classList.add('completed');
-                } else {
-                    day.classList.remove('completed');
-                }
-            });
-        }
-
-        function completeWorkout() {
-            const today = new Date();
-            const todayDate = today.toDateString();
-
-            if (!isWorkoutCompletedToday()) {
-                streak++;
-                completedToday = true;
-                lastWorkoutDate = today;
-                updateStreakDisplay();
-                saveStreakData();
-            }
-        }
-
-        function saveStreakData() {
-            try {
-                localStorage.setItem('streak', streak.toString());
-                localStorage.setItem('lastWorkoutDate', lastWorkoutDate.toISOString());
-            } catch (error) {
-                console.error('Error saving streak data to localStorage:', error);
-            }
-        }
-
-        function resetWorkout() {
-            clearInterval(timerInterval);
-            workoutContainer.style.display = "none";
-            currentExerciseIndex = 0;
-            timeLeft = 0;
-            totalTime = 0;
-            updateTimerDisplay();
-            isPaused = false;
-            generateBtn.style.display = "block";
-        }
-
-        stopBtn.addEventListener('click', function() {
-            resetWorkout();
-        });
-
-        // Add these class changes in the startCountdown function.
-        function startCountdown(isRest) {
-            timerInterval = setInterval(() => {
-                if (!isPaused) {
-                    timeLeft--;
-                    updateTimerDisplay();
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        if (!isRest) {
-                            exerciseName.textContent = "Rest";
-                            exerciseDescription.textContent = "Get ready for the next exercise!";
-                            timerElement.classList.add('pulse');
-                            document.body.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                            timeLeft = 10;
-                            totalTime = 10;
-                            updateTimerDisplay();
-                            startCountdown(true);
-                        } else {
-                            exerciseName.classList.add('shake');
-                            timerElement.classList.remove('pulse');
-                            document.body.style.backgroundColor = "#000";
-                            currentExerciseIndex++;
-                            startExercise();
-                        }
-                    }
-                }
-            }, 1000);
-        }
+        stopBtn.addEventListener('click', stopWorkout); // Use stopWorkout for the stop button
 
         // Remove the shake class after the animation.
         exerciseName.addEventListener('animationend', () => {
             exerciseName.classList.remove('shake');
         });
 
-        // Disable the skip button on the last exercise.
-        if (currentExerciseIndex === currentWorkout.length - 1) {
-            skipBtn.disabled = true;
-        } else {
-            skipBtn.disabled = false;
-        }
-
-        // Add a title attribute to each streak day for a tooltip.
-        streakDays.forEach((day, index) => {
-            day.title = `Day ${index + 1}`;
-        });
+        // Streak day title logic removed
     </script>
 </body>
 </html>

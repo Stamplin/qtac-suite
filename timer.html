@@ -9,15 +9,107 @@
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
         :root {
-            --text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.9);
-            --box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.5);
-            --glow-color: rgba(255, 255, 255, 0.9);
+            /* Dark Theme */
+            --bg-color-dark: #000;
+            --text-color-dark: #fff;
+            --border-color-dark: #fff;
+            --shadow-color-dark: rgba(255, 255, 255, 0.5);
+            --glow-color-dark: rgba(255, 255, 255, 0.9);
+            --highlight-bg-dark: rgba(255, 255, 255, 0.1);
+            --highlight-bg-hover-dark: rgba(255, 255, 255, 0.3);
+            --progress-bg-dark: rgba(255, 255, 255, 0.2);
+            --progress-fill-dark: white;
+            --tagline-color-dark: rgba(255, 255, 255, 0.7);
+            --tagline-shadow-dark: rgba(255, 255, 255, 0.6);
+            --attribution-color-dark: rgba(255, 255, 255, 0.5);
+            --input-bg-dark: transparent;
+            --input-border-dark: white;
+            --input-text-dark: white;
+            --tiny-btn-color-dark: rgba(255, 255, 255, 0.5);
+            --tiny-btn-hover-color-dark: white;
+            --settings-bg-dark: rgba(0, 0, 0, 0.95);
+            --break-bg-dark: #1e1e1e;
+            --long-break-bg-dark: #0d1c2e;
+
+            /* Light Theme */
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --border-color-light: #555;
+            --shadow-color-light: rgba(0, 0, 0, 0.2);
+            --glow-color-light: transparent; /* Remove glow in light theme */
+            --highlight-bg-light: rgba(0, 0, 0, 0.05);
+            --highlight-bg-hover-light: rgba(0, 0, 0, 0.1);
+            --progress-bg-light: rgba(0, 0, 0, 0.1);
+            --progress-fill-light: #333;
+            --tagline-color-light: rgba(0, 0, 0, 0.6);
+            --tagline-shadow-light: rgba(0, 0, 0, 0.1);
+            --attribution-color-light: rgba(0, 0, 0, 0.5);
+            --input-bg-light: rgba(0, 0, 0, 0.05);
+            --input-border-light: #555;
+            --input-text-light: #333;
+            --tiny-btn-color-light: rgba(0, 0, 0, 0.5);
+            --tiny-btn-hover-color-light: #333;
+            --settings-bg-light: rgba(255, 255, 255, 0.95);
+            --break-bg-light: #e0e0e0;
+            --long-break-bg-light: #d0d8e0;
+
+            /* Default to dark theme */
+            --bg-color: var(--bg-color-dark);
+            --text-color: var(--text-color-dark);
+            --border-color: var(--border-color-dark);
+            --shadow-color: var(--shadow-color-dark);
+            --glow-color: var(--glow-color-dark);
+            --highlight-bg: var(--highlight-bg-dark);
+            --highlight-bg-hover: var(--highlight-bg-hover-dark);
+            --progress-bg: var(--progress-bg-dark);
+            --progress-fill: var(--progress-fill-dark);
+            --tagline-color: var(--tagline-color-dark);
+            --tagline-shadow: var(--tagline-shadow-dark);
+            --attribution-color: var(--attribution-color-dark);
+            --input-bg: var(--input-bg-dark);
+            --input-border: var(--input-border-dark);
+            --input-text: var(--input-text-dark);
+            --tiny-btn-color: var(--tiny-btn-color-dark);
+            --tiny-btn-hover-color: var(--tiny-btn-hover-color-dark);
+            --settings-bg: var(--settings-bg-dark);
+            --break-bg: var(--break-bg-dark);
+            --long-break-bg: var(--long-break-bg-dark);
+
+            --text-shadow: 0px 0px 10px var(--glow-color);
+            --box-shadow: 0px 0px 15px var(--shadow-color);
+        }
+
+        body.light-theme {
+            --bg-color: var(--bg-color-light);
+            --text-color: var(--text-color-light);
+            --border-color: var(--border-color-light);
+            --shadow-color: var(--shadow-color-light);
+            --glow-color: var(--glow-color-light);
+            --highlight-bg: var(--highlight-bg-light);
+            --highlight-bg-hover: var(--highlight-bg-hover-light);
+            --progress-bg: var(--progress-bg-light);
+            --progress-fill: var(--progress-fill-light);
+            --tagline-color: var(--tagline-color-light);
+            --tagline-shadow: var(--tagline-shadow-light);
+            --attribution-color: var(--attribution-color-light);
+            --input-bg: var(--input-bg-light);
+            --input-border: var(--input-border-light);
+            --input-text: var(--input-text-light);
+            --tiny-btn-color: var(--tiny-btn-color-light);
+            --tiny-btn-hover-color: var(--tiny-btn-hover-color-light);
+            --settings-bg: var(--settings-bg-light);
+            --break-bg: var(--break-bg-light);
+            --long-break-bg: var(--long-break-bg-light);
+
+            /* Adjust shadows for light theme */
+            --text-shadow: 0px 0px 5px var(--shadow-color-light);
+            --box-shadow: 0px 0px 10px var(--shadow-color-light);
         }
 
         body {
             font-family: 'Space Mono', monospace;
-            background: #000;
-            color: #fff;
+            background: var(--bg-color);
+            color: var(--text-color);
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -25,13 +117,13 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            transition: background 1s ease;
+            transition: background 1s ease, color 1s ease; /* Added color transition */
             position: relative;
             overflow: hidden;
         }
 
         #container {
-            border: 2px solid white;
+            border: 2px solid var(--border-color);
             padding: 40px;
             border-radius: 15px;
             box-shadow: var(--box-shadow);
@@ -47,6 +139,7 @@
             opacity: 0;
             transform: translateY(20px);
             animation: fadeIn 1s forwards 0.5s;
+            transition: border-color 1s ease, box-shadow 1s ease; /* Added transitions */
         }
 
         @keyframes fadeIn {
@@ -63,8 +156,9 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, transparent, white, transparent);
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
             animation: none;
+            transition: background 1s ease; /* Added transition */
         }
 
         @keyframes progressBar {
@@ -101,19 +195,23 @@
         #progress-container {
             width: 100%;
             height: 3px;
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--progress-bg);
             margin: 10px 0;
             position: relative;
             opacity: 0;
             animation: fadeIn 0.5s forwards 2.2s;
+            border-radius: 2px; /* Added */
+            overflow: hidden; /* Added */
+            transition: background 1s ease; /* Added transition */
         }
 
         #progress-bar {
-            position: absolute;
+            /* position: absolute; Removed */
             height: 100%;
             width: 0%;
-            background: white;
-            transition: width 1s linear;
+            background: var(--progress-fill);
+            transition: width 1s linear, background 1s ease; /* Added background transition */
+            border-radius: 2px; /* Added */
         }
 
         #mode-container {
@@ -129,6 +227,7 @@
             font-size: 2rem;
             text-shadow: var(--text-shadow);
             letter-spacing: 2px;
+            transition: text-shadow 1s ease; /* Added transition */
         }
 
         #timer {
@@ -137,34 +236,35 @@
             text-shadow: var(--text-shadow);
             margin: 20px 0;
             letter-spacing: 4px;
+            transition: text-shadow 1s ease; /* Added transition */
         }
 
-.buttons {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    opacity: 0;
-    animation: fadeIn 0.5s forwards 2.5s;
-    justify-content: center;
-}
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.5s;
+            justify-content: center;
+        }
 
         button {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 2px solid white;
+            background: var(--highlight-bg);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
             padding: 10px 20px;
             font-size: 1.2rem;
             cursor: pointer;
-            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.9);
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease-in-out;
+            text-shadow: var(--text-shadow);
+            box-shadow: var(--box-shadow);
+            transition: all 0.2s ease-in-out, background 1s ease, color 1s ease, border-color 1s ease, text-shadow 1s ease, box-shadow 1s ease; /* Added transitions */
             width: 120px;
             font-family: 'Space Mono', monospace;
         }
 
         button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+            background: var(--highlight-bg-hover);
+            box-shadow: 0px 0px 20px var(--shadow-color);
         }
 
         #controls {
@@ -190,32 +290,36 @@
         .setting label {
             font-size: 0.8rem;
             margin-bottom: 5px;
+            transition: color 1s ease; /* Added transition */
         }
 
         .setting input {
             width: 60px;
-            background: transparent;
-            color: white;
-            border: 1px solid white;
+            background: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--input-border);
             padding: 5px;
             text-align: center;
             font-family: 'Space Mono', monospace;
+            transition: background 1s ease, color 1s ease, border-color 1s ease; /* Added transitions */
         }
 
         #cycleText {
             font-size: 1.2rem;
             margin-top: 20px;
             letter-spacing: 1px;
+            transition: color 1s ease; /* Added transition */
         }
 
         #tagline {
             font-size: 0.7rem;
             margin-top: 30px;
-            color: rgba(255, 255, 255, 0.7);
-            text-shadow: 0px 0px 5px rgba(255, 255, 255, 0.6);
+            color: var(--tagline-color);
+            text-shadow: 0px 0px 5px var(--tagline-shadow);
             letter-spacing: 5px;
             opacity: 0;
             animation: fadeIn 0.5s forwards 3s;
+            transition: color 1s ease, text-shadow 1s ease; /* Added transitions */
         }
 
         /* Modified corner buttons */
@@ -231,16 +335,17 @@
         .tiny-button {
             background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--tiny-btn-color);
             padding: 5px;
             font-size: 1rem;
             width: auto;
             box-shadow: none;
             text-shadow: none;
+            transition: color 0.2s ease, color 1s ease; /* Added color transition */
         }
 
         .tiny-button:hover {
-            color: white;
+            color: var(--tiny-btn-hover-color);
             background: transparent;
             box-shadow: none;
         }
@@ -252,7 +357,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: var(--settings-bg);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -260,6 +365,8 @@
             z-index: 10;
             padding: 20px;
             box-sizing: border-box;
+            transition: background 1s ease; /* Added transition */
+            color: var(--text-color); /* Ensure text color matches theme */
         }
 
         .settings-row {
@@ -272,17 +379,24 @@
 
         .settings-row label {
             text-align: left;
+            transition: color 1s ease; /* Added transition */
         }
 
-        .settings-row input {
+        .settings-row input[type="number"],
+        .settings-row input[type="range"] {
             width: 80px;
-            background: transparent;
-            color: white;
-            border: 1px solid white;
+            background: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--input-border);
             padding: 5px;
             text-align: center;
             font-family: 'Space Mono', monospace;
+            transition: background 1s ease, color 1s ease, border-color 1s ease; /* Added transitions */
         }
+        .settings-row input[type="checkbox"] {
+             /* Style checkbox if needed */
+        }
+
 
         .close-settings {
             margin-top: 20px;
@@ -294,10 +408,29 @@
             width: 100%;
             text-align: center;
             font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--attribution-color);
             letter-spacing: 1px;
             opacity: 0;
             animation: fadeIn 0.5s forwards 3.2s;
+            transition: color 1s ease; /* Added transition */
+        }
+
+        /* Theme toggle */
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 3s;
+            transition: transform 0.3s ease, color 1s ease; /* Added color transition */
+            color: var(--text-color); /* Ensure toggle matches text color */
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.2);
         }
 
         .emoji {
@@ -305,11 +438,21 @@
             opacity: 0;
             animation: fadeIn 0.5s forwards 2.8s; /* Fade-in animation */
         }
+
+        #bottom-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards 2.8s;
+            width: 100%; /* Ensure it takes the full width of the container */
+        }
     </style>
 </head>
 <body>
-<div id="container">
-<a href="index.html" class="tiny-button emoji" style="text-decoration: none; display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; left: 10px;" onclick="toggleWhiteNoise()">🏠</a>
+    <div id="theme-toggle" role="button" aria-label="Toggle Theme" title="Toggle Theme">🌙</div>
+    <div id="container">
+        <a href="index.html" class="tiny-button emoji" style="text-decoration: none; display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; left: 10px;" aria-label="Go to Home Page" title="Go to Home Page">🏠</a>
         <div id="mode-container">
             <div id="mode" class="typing-effect"></div>
         </div>
@@ -328,10 +471,10 @@
         
         <div id="cycleText" class="typing-effect">CYCLE: 0</div>
         
-<div id="secondary-controls">
-<button id="whiteNoiseBtn" class="tiny-button emoji" onclick="toggleWhiteNoise()">🔇</button>
+        <div id="secondary-controls">
+            <button id="whiteNoiseBtn" class="tiny-button emoji" onclick="toggleWhiteNoise()" aria-label="Toggle White Noise" title="Toggle White Noise">🔇</button>
         </div>
-<div id="bottom-controls">
+        <div id="bottom-controls">
             <button id="skipBtn" class="tiny-button" onclick="skipSession()">skip</button>
             <button id="settingsBtn" class="tiny-button" onclick="toggleSettings()">settings</button>
         </div>
@@ -372,18 +515,6 @@
         <button class="close-settings" onclick="toggleSettings()">SAVE & CLOSE</button>
     </div>
 
-<style>
-#bottom-controls {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    opacity: 0;
-    animation: fadeIn 0.5s forwards 2.8s;
-    width: 100%; /* Ensure it takes the full width of the container */
-}
-
-</style>
-
     <script>
         // Default settings
         let settings = {
@@ -406,10 +537,12 @@
         let audioCtx = null;
         let whiteNoiseSource = null;
         let gainNode = null;
+        let currentTheme = localStorage.getItem('theme') || 'dark';
 
         // Initialize
         function init() {
             loadSettings();
+            applyTheme(currentTheme); // Apply theme on init
             timeLeft = settings.workTime * 60;
             totalTime = timeLeft;
             updateProgressBar(100);
@@ -420,24 +553,69 @@
             document.getElementById("cycleText").innerText = "CYCLE: " + cycles;
 
             // Initialize audio context and gain node
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            gainNode = audioCtx.createGain();
-            gainNode.connect(audioCtx.destination);
-            gainNode.gain.value = 0.002; // Reduce maximum volume
-            // Set initial volume
-            gainNode.gain.value = document.getElementById('whiteNoiseVolume').value;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioCtx.createGain();
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.value = 0.002; // Reduce maximum volume
+                // Set initial volume from range input
+                gainNode.gain.value = document.getElementById('whiteNoiseVolume').value;
+            } catch (e) {
+                console.error("Web Audio API is not supported in this browser.", e);
+                // Disable sound-related features if context fails
+                settings.soundEnabled = false;
+                document.getElementById('soundToggle').checked = false;
+                document.getElementById('soundToggle').disabled = true;
+                document.getElementById('whiteNoiseBtn').disabled = true;
+                document.getElementById('whiteNoiseVolume').disabled = true;
+            }
+
 
             // Add event listener for volume control
             document.getElementById('whiteNoiseVolume').addEventListener('input', function() {
-                gainNode.gain.value = this.value;
+                if (gainNode) {
+                    gainNode.gain.value = this.value;
+                }
             });
+
+            // Theme toggle listener
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                localStorage.setItem('theme', currentTheme);
+            });
+        }
+
+        // Apply theme function
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('theme-toggle').textContent = '☀️';
+            } else {
+                document.body.classList.remove('light-theme');
+                document.getElementById('theme-toggle').textContent = '🌙';
+            }
+            // Update background based on current session type and theme
+            updateBackground();
         }
 
         // Load settings from localStorage if available
         function loadSettings() {
             const savedSettings = localStorage.getItem('pomodoroSettings');
             if (savedSettings) {
-                settings = JSON.parse(savedSettings);
+                try {
+                    settings = JSON.parse(savedSettings);
+                    // Ensure loaded settings are valid numbers
+                    settings.workTime = parseInt(settings.workTime) || 25;
+                    settings.breakTime = parseInt(settings.breakTime) || 5;
+                    settings.longBreakTime = parseInt(settings.longBreakTime) || 15;
+                    settings.longBreakInterval = parseInt(settings.longBreakInterval) || 4;
+                    settings.soundEnabled = typeof settings.soundEnabled === 'boolean' ? settings.soundEnabled : true;
+                } catch (e) {
+                    console.error("Error parsing saved settings:", e);
+                    // Reset to default if parsing fails
+                    settings = { workTime: 25, breakTime: 5, longBreakTime: 15, longBreakInterval: 4, soundEnabled: true };
+                }
             }
             
             // Update settings form
@@ -483,7 +661,7 @@
             document.getElementById("timer").innerText = formattedTime;
             
             // Update progress bar
-            const progressPercentage = (timeLeft / totalTime) * 100;
+            const progressPercentage = totalTime > 0 ? (timeLeft / totalTime) * 100 : 0;
             updateProgressBar(progressPercentage);
             
             // Update document title
@@ -502,7 +680,12 @@
                 isRunning = false;
                 document.getElementById("startBtn").innerText = "START";
             } else {
+                // Resume audio context if suspended
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
                 // Start timer
+                clearInterval(interval); // Clear any existing interval first
                 interval = setInterval(() => {
                     if (timeLeft > 0) {
                         timeLeft--;
@@ -536,16 +719,26 @@
             document.getElementById("startBtn").innerText = "START";
             
             updateProgressBar(100);
-            document.body.style.background = "#000";
+            updateBackground(); // Use function to set background
         }
 
         // Skip current session
         function skipSession() {
-            if (isRunning) {
-                clearInterval(interval);
-            }
-            switchSession();
+            clearInterval(interval); // Stop current timer
+            switchSession(); // Immediately switch to the next session
         }
+
+        // Update background based on session type and theme
+        function updateBackground() {
+            let bgColorVar;
+            if (isWorkSession) {
+                bgColorVar = '--bg-color'; // Use the main background color for focus
+            } else {
+                bgColorVar = isLongBreak ? '--long-break-bg' : '--break-bg'; // Use break or long break color
+            }
+            document.body.style.background = `var(${bgColorVar})`;
+        }
+
 
         // Switch between focus and break sessions
         function switchSession() {
@@ -565,15 +758,14 @@
             let modeText;
             if (isWorkSession) {
                 modeText = "FOCUS";
-                document.body.style.background = "#000";
-                cycles++;
+                cycles++; // Increment cycle only when starting a focus session
             } else {
                 modeText = isLongBreak ? "LONG BREAK" : "BREAK";
-                document.body.style.background = isLongBreak ? "#0d1c2e" : "#1e1e1e";
             }
             
-            if (isWorkSession) {
-                completedSessions++;
+            // Increment completedSessions *after* a work session finishes
+            if (!isWorkSession) {
+                 completedSessions++;
             }
             
             document.getElementById("mode").innerText = modeText;
@@ -582,8 +774,10 @@
             
             // Reset progress bar
             updateProgressBar(100);
+            updateBackground(); // Update background color
             
-            // Start timer automatically
+            // Start timer automatically for the new session
+            isRunning = false; // Ensure isRunning is false before calling toggleTimer
             toggleTimer();
         }
 
@@ -596,35 +790,43 @@
 
         // Play sound notification
         function playSound() {
-            if (!settings.soundEnabled) return;
+            if (!settings.soundEnabled || !audioCtx || !gainNode) return;
             
             try {
-                
+                // Resume context just in case
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
                 const oscillator = audioCtx.createOscillator();
-                
-                oscillator.connect(gainNode);
+                const tempGain = audioCtx.createGain(); // Use temporary gain for sound effect
+                tempGain.connect(gainNode); // Connect to main gain node
+
+                oscillator.connect(tempGain);
                 
                 oscillator.type = 'sine';
-                oscillator.frequency.value = 750;
-                gainNode.gain.value = 0.3;
-                
-                oscillator.start();
-                
-                setTimeout(() => {
-                    oscillator.stop();
-                }, 200);
-                
+                oscillator.frequency.setValueAtTime(750, audioCtx.currentTime);
+                tempGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Start volume
+                tempGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2); // Fade out quickly
+
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2); // Stop after 200ms
+
+                // Second beep
                 setTimeout(() => {
                     const oscillator2 = audioCtx.createOscillator();
-                    oscillator2.connect(gainNode);
+                    const tempGain2 = audioCtx.createGain();
+                    tempGain2.connect(gainNode);
+
+                    oscillator2.connect(tempGain2);
                     oscillator2.type = 'sine';
-                    oscillator2.frequency.value = 1000;
-                    oscillator2.start();
-                    
-                    setTimeout(() => {
-                        oscillator2.stop();
-                    }, 300);
-                }, 300);
+                    oscillator2.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                    tempGain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    tempGain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+                    oscillator2.start(audioCtx.currentTime);
+                    oscillator2.stop(audioCtx.currentTime + 0.3);
+                }, 300); // Delay second beep
                 
             } catch (e) {
                 console.error("Could not play sound:", e);
@@ -633,32 +835,48 @@
 
         // Function to generate and toggle white noise
         function toggleWhiteNoise() {
+             if (!audioCtx || !gainNode) {
+                 console.error("Audio context not initialized.");
+                 return;
+             }
             try {
+                 // Resume context if suspended (important for user interaction requirement)
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
                 const whiteNoiseBtn = document.getElementById('whiteNoiseBtn');
 
                 if (whiteNoiseSource) {
                     // If white noise is playing, stop it
                     whiteNoiseSource.stop();
+                    whiteNoiseSource.disconnect(); // Disconnect node
                     whiteNoiseSource = null;
                     whiteNoiseBtn.textContent = '🔇'; // Mute emoji
                 } else {
-                    // Create white noise
-                    const bufferSize = 2 * audioCtx.sampleRate;
+                    // Create white noise buffer
+                    const bufferSize = 2 * audioCtx.sampleRate; // 2 seconds of noise
                     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                     const output = noiseBuffer.getChannelData(0);
                     for (let i = 0; i < bufferSize; i++) {
-                        output[i] = Math.random() * 2 - 1;
+                        output[i] = Math.random() * 2 - 1; // Generate random samples between -1 and 1
                     }
 
+                    // Create buffer source node
                     whiteNoiseSource = audioCtx.createBufferSource();
                     whiteNoiseSource.buffer = noiseBuffer;
-                    whiteNoiseSource.loop = true;
-                    whiteNoiseSource.connect(gainNode); // Connect to gain node
-                    whiteNoiseSource.start(0);
+                    whiteNoiseSource.loop = true; // Loop the noise buffer
+                    whiteNoiseSource.connect(gainNode); // Connect to main gain node
+                    whiteNoiseSource.start(0); // Start playing immediately
                     whiteNoiseBtn.textContent = '🔈'; // Sound emoji
                 }
             } catch (e) {
                 console.error("Could not play white noise:", e);
+                 if (whiteNoiseSource) {
+                     whiteNoiseSource.disconnect(); // Clean up on error
+                     whiteNoiseSource = null;
+                 }
+                 document.getElementById('whiteNoiseBtn').textContent = '🔇'; // Reset button
             }
         }
 
@@ -670,29 +888,38 @@
 
         // Add keyboard shortcuts
         document.addEventListener('keydown', function(e) {
+            // Prevent shortcuts if settings panel is open or if typing in an input
+            if (document.getElementById('settings-panel').style.display === 'flex' || e.target.tagName === 'INPUT') {
+                return;
+            }
+
             // Spacebar - Start/Pause
-            if (e.code === 'Space' && document.getElementById('settings-panel').style.display !== 'flex') {
-                e.preventDefault();
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevent default spacebar action (scrolling)
                 toggleTimer();
             }
             // R key - Reset
-            if (e.code === 'KeyR' && document.getElementById('settings-panel').style.display !== 'flex') {
+            if (e.code === 'KeyR') {
                 resetTimer();
             }
             // S key - Skip
-            if (e.code === 'KeyS' && document.getElementById('settings-panel').style.display !== 'flex') {
+            if (e.code === 'KeyS') {
                 skipSession();
-            }
-            // Escape key - Close settings panel
-            if (e.code === 'Escape' && document.getElementById('settings-panel').style.display === 'flex') {
-                toggleSettings();
             }
         });
 
-        // Request notification permission
-        if ('Notification' in window) {
-            Notification.requestPermission();
-        }
+        // Escape key - Close settings panel (handle separately as it should work even if inputs have focus)
+         document.addEventListener('keydown', function(e) {
+            if (e.code === 'Escape' && document.getElementById('settings-panel').style.display === 'flex') {
+                toggleSettings();
+            }
+         });
+
+
+        // Request notification permission (optional, can be removed if not needed)
+        // if ('Notification' in window) {
+        //     Notification.requestPermission();
+        // }
     </script>
 </body>
 </html>
